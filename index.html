@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategik O'quv Rejasi: Harvard Usuli + AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Import Google Fonts for Icons (optional fallback) but using Unicode mostly -->
+    <style>
+        /* Chart Container Styling Rules per requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f5f5f4; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e; 
+        }
+
+        /* AI Loading Animation */
+        .typing-indicator span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #4f46e5;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out both;
+            margin: 0 2px;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        .markdown-prose p { margin-bottom: 0.75rem; }
+        .markdown-prose ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; }
+        .markdown-prose strong { color: #4338ca; font-weight: 700; }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-800">
+
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl mr-2">⚖️</span>
+                    <h1 class="text-xl font-bold tracking-tight text-stone-900 hidden sm:block">Strategik O'quv Paneli</h1>
+                    <h1 class="text-xl font-bold tracking-tight text-stone-900 sm:hidden">Sprint Rejim</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 flex items-center gap-1">
+                        <span class="animate-pulse w-2 h-2 rounded-full bg-green-500"></span>
+                        Sprint Rejimi: Faol
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- Introduction Section -->
+        <section class="bg-white rounded-2xl shadow-sm border border-stone-100 p-6 md:p-8">
+            <div class="max-w-3xl">
+                <h2 class="text-2xl font-bold text-stone-900 mb-4">Dastur Haqida</h2>
+                <p class="text-stone-600 leading-relaxed mb-6">
+                    Ushbu interaktiv panel sizning "Sprint Rejim"ingiz va Universitet dars jadvalingiz asosida ishlab chiqilgan. 
+                    Bu shunchaki jadval emas, balki kognitiv psixologiya (Justin Sung metodikasi) va yuqori samaradorlikka asoslangan 
+                    strategik tizimdir. Bu yerda sizning kundalik vazifalaringiz, aqliy yuklama taqsimoti va "Spaced Repetition" (Oraliq takrorlash) 
+                    tizimingiz vizuallashtirilgan.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-stone-50 p-4 rounded-xl border border-stone-200 hover:border-indigo-300 transition-colors">
+                        <h3 class="font-bold text-indigo-700 mb-1">🧠 Active Recall</h3>
+                        <p class="text-sm text-stone-600">O'qishdan oldin eslash. Ertalabki 05:00 dagi asosiy qurolingiz.</p>
+                    </div>
+                    <div class="bg-stone-50 p-4 rounded-xl border border-stone-200 hover:border-indigo-300 transition-colors">
+                        <h3 class="font-bold text-indigo-700 mb-1">⚡ Priming</h3>
+                        <p class="text-sm text-stone-600">Miyani oldindan tayyorlash. Leksiyadan oldin rejani ko'rib chiqish.</p>
+                    </div>
+                    <div class="bg-stone-50 p-4 rounded-xl border border-stone-200 hover:border-indigo-300 transition-colors">
+                        <h3 class="font-bold text-indigo-700 mb-1">🔗 Integration</h3>
+                        <p class="text-sm text-stone-600">Huquq + Ingliz tili + Mnemonika. Uchala sohani birlashtirish.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Interactive Schedule -->
+        <section id="schedule-app" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Day Selector (Sidebar) -->
+            <div class="lg:col-span-3 space-y-2">
+                <h3 class="text-lg font-bold text-stone-900 mb-4 px-2">Hafta Kunlari</h3>
+                <p class="text-xs text-stone-500 mb-4 px-2">Kunni tanlang va batafsil strategiyani ko'ring.</p>
+                <div id="day-buttons" class="flex flex-col space-y-2">
+                    <!-- Buttons injected by JS -->
+                </div>
+            </div>
+
+            <!-- Detailed Day View -->
+            <div class="lg:col-span-9">
+                <div id="day-content" class="bg-white rounded-2xl shadow-lg border border-stone-200 overflow-hidden min-h-[500px]">
+                    <!-- Dynamic Content injected by JS -->
+                    <div class="flex items-center justify-center h-full text-stone-400">
+                        Yuklanmoqda...
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Cognitive Lab Section (NEW) -->
+        <section class="bg-gradient-to-br from-indigo-50 to-white rounded-2xl shadow-sm border border-indigo-100 p-6 md:p-8 relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-10 text-9xl pointer-events-none">✨</div>
+            
+            <div class="relative z-10">
+                <div class="flex items-center mb-6">
+                    <div class="p-2 bg-indigo-600 rounded-lg text-white mr-3 shadow-lg shadow-indigo-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-stone-900">AI Kognitiv Laboratoriya</h2>
+                        <p class="text-sm text-stone-500">Gemini yordamida o'qish jarayonini tezlashtiring.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Input Area -->
+                    <div class="space-y-4">
+                        <label for="ai-input" class="block text-sm font-medium text-stone-700">Mavzu yoki moddani kiriting:</label>
+                        <textarea id="ai-input" rows="4" class="w-full p-4 rounded-xl border border-stone-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm" placeholder="Masalan: Konstitutsiya 15-modda yoki 'Aybsizlik prezumpsiyasi'"></textarea>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <button onclick="callGemini('mnemonic')" class="flex items-center justify-center px-4 py-3 bg-white border border-indigo-200 text-indigo-700 rounded-xl hover:bg-indigo-50 transition shadow-sm font-medium">
+                                <span class="mr-2">🏰</span> Mnemonika
+                            </button>
+                            <button onclick="callGemini('recall')" class="flex items-center justify-center px-4 py-3 bg-white border border-indigo-200 text-indigo-700 rounded-xl hover:bg-indigo-50 transition shadow-sm font-medium">
+                                <span class="mr-2">❓</span> Savol Tuzish
+                            </button>
+                            <button onclick="callGemini('simplify')" class="flex items-center justify-center px-4 py-3 bg-white border border-indigo-200 text-indigo-700 rounded-xl hover:bg-indigo-50 transition shadow-sm font-medium">
+                                <span class="mr-2">🧩</span> Soddalashtir
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Output Area -->
+                    <div class="bg-white rounded-xl border border-stone-200 shadow-inner p-6 min-h-[200px] flex flex-col">
+                        <div class="flex justify-between items-center mb-4 border-b border-stone-100 pb-2">
+                            <h3 class="text-sm font-bold text-stone-400 uppercase tracking-wider">AI Javobi</h3>
+                            <div id="ai-loading" class="hidden">
+                                <div class="typing-indicator">
+                                    <span></span><span></span><span></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="ai-output" class="text-stone-700 leading-relaxed markdown-prose flex-grow">
+                            <p class="text-stone-400 italic">Javob shu yerda paydo bo'ladi...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Visual Analytics Section -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Cognitive Load Chart -->
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-100 p-6">
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-stone-900">Aqliy Yuklama Taqsimoti (Mental Effort)</h3>
+                    <p class="text-sm text-stone-500 mt-1">
+                        Kun davomida miyangizning faollik darajasi. Harvard usulida asosiy urg'u ertalabki "Recall" va tushdan keyingi "Deep Work"ga beriladi.
+                    </p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="effortChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Subject Focus Distribution -->
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-100 p-6">
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-stone-900">Fanlar Balansi</h3>
+                    <p class="text-sm text-stone-500 mt-1">
+                        Haftalik vaqt ajratilishi. Asosiy e'tibor qiyin fanlarga (DHN, Sud) va seminarga tayyorgarlikka qaratilgan.
+                    </p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="subjectChart"></canvas>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Interactive Methodology Toolkit -->
+        <section class="bg-indigo-900 rounded-3xl p-8 md:p-12 text-white overflow-hidden relative">
+            <div class="relative z-10 max-w-4xl mx-auto text-center">
+                <h2 class="text-3xl font-bold mb-6">Metodika Lug'ati & Asboblar</h2>
+                <p class="text-indigo-200 mb-10 text-lg">
+                    Sizning muvaffaqiyatingiz shunchaki o'qishda emas, balki QANDAY o'qishingizda.
+                </p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-left">
+                    <div class="bg-indigo-800/50 p-5 rounded-xl backdrop-blur-sm hover:bg-indigo-700 transition cursor-pointer method-card" data-term="spaced">
+                        <div class="text-2xl mb-2">📅</div>
+                        <h4 class="font-bold">Spaced Repetition</h4>
+                        <p class="text-xs text-indigo-300 mt-2">Unutish egri chizig'ini buzish usuli.</p>
+                    </div>
+                    <div class="bg-indigo-800/50 p-5 rounded-xl backdrop-blur-sm hover:bg-indigo-700 transition cursor-pointer method-card" data-term="encoding">
+                        <div class="text-2xl mb-2">🧩</div>
+                        <h4 class="font-bold">Deep Encoding</h4>
+                        <p class="text-xs text-indigo-300 mt-2">Ma'lumotni bog'lash va tushunish.</p>
+                    </div>
+                    <div class="bg-indigo-800/50 p-5 rounded-xl backdrop-blur-sm hover:bg-indigo-700 transition cursor-pointer method-card" data-term="recall">
+                        <div class="text-2xl mb-2">💡</div>
+                        <h4 class="font-bold">Active Recall</h4>
+                        <p class="text-xs text-indigo-300 mt-2">Miyadan ma'lumotni sug'urib olish.</p>
+                    </div>
+                    <div class="bg-indigo-800/50 p-5 rounded-xl backdrop-blur-sm hover:bg-indigo-700 transition cursor-pointer method-card" data-term="mnemonics">
+                        <div class="text-2xl mb-2">🏰</div>
+                        <h4 class="font-bold">Memory Palace</h4>
+                        <p class="text-xs text-indigo-300 mt-2">Huquqiy normalarni fazoviy joylash.</p>
+                    </div>
+                </div>
+
+                <!-- Term Definition Display -->
+                <div id="term-display" class="mt-8 bg-white/10 rounded-xl p-6 hidden">
+                    <h4 id="term-title" class="text-xl font-bold text-white mb-2"></h4>
+                    <p id="term-desc" class="text-indigo-100"></p>
+                </div>
+            </div>
+            
+            <!-- Decorative Elements -->
+            <div class="absolute top-0 left-0 w-64 h-64 bg-indigo-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -translate-x-1/2 -translate-y-1/2"></div>
+            <div class="absolute bottom-0 right-0 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 translate-x-1/2 translate-y-1/2"></div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-stone-200 mt-12 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center text-stone-500 text-sm">
+            <p>&copy; 2026 SPRINT MODE. Harvard Strategy & Justin Sung Methodology.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // API Configuration
+        const apiKey = "AIzaSyC6JoG9mwgI_2j4VpIW9ReFrS2B64X7fkw"; // Will be injected by runtime environment
+
+        // --- DATA STORE ---
+        const scheduleData = [
+            {
+                day: "Dushanba",
+                focus: "DHN & Asoslar",
+                color: "blue",
+                strategy: "Dushanba kuni DHN leksiyasi bor. Uni issig'ida 'kodlash' (encoding) kerak. Seshanba kuni Sud hokimiyatidan leksiya borligi uchun, kechqurun unga biroz tayyorgarlik ko'rasiz.",
+                timeline: [
+                    { time: "05:00 - 06:30", activity: "Retrieval", title: "Free Recall: DHN (O'tgan hafta)", desc: "O'tgan haftadagi mavzuni eslash. Bugungi leksiya mavzusiga 15 daqiqa 'Priming' qilish." },
+                    { time: "08:30 - 13:30", activity: "Univer", title: "Leksiya: DHN", desc: "Faqat asosiy g'oyalarni yozing (Flow notes). So'zma-so'z ko'chirmang." },
+                    { time: "14:00 - 16:00", activity: "Deep Work", title: "DHN Tahlili & Mind Map", desc: "Bugungi leksiyani qayta ishlash. Uni o'tgan haftadagi mavzuga bog'lash." },
+                    { time: "16:00 - 17:00", activity: "Skills", title: "Prof. Ko'nikmalar", desc: "Bugungi darsdagi vazifani bajarish (Amaliyot)." },
+                    { time: "17:00 - 18:30", activity: "Integration", title: "Ingliz Tili", desc: "DHN mavzusini ingliz tilidagi manbadan o'qib, yangi terminlarni yozib olish." },
+                    { time: "18:30 - 20:00", activity: "Mnemonics", title: "Mnemonika & Sud Prep", desc: "Loci metodi mashqi + Ertangi Sud hokimiyati mavzusiga qisqa nazar." }
+                ]
+            },
+            {
+                day: "Seshanba",
+                focus: "Og'ir Leksiyalar (Sud/Fuqarolik)",
+                color: "indigo",
+                strategy: "Seshanba eng qiyin kun. Chorshanba kuni Sud hokimiyatidan Seminar borligi uchun, asosiy urg'u seminarga tayyorgarlikka qaratiladi. Priming juda muhim.",
+                timeline: [
+                    { time: "05:00 - 06:30", activity: "Priming", title: "Priming: Sud & Fuqarolik", desc: "Bugungi leksiyalar rejasi bilan tanishish. Miya 'nima haqida gap ketishini' bilishi kerak." },
+                    { time: "08:30 - 13:30", activity: "Univer", title: "Leksiya: Sud & Fuqarolik", desc: "Ikkita og'ir leksiya. Diqqatni yuqori ushlash." },
+                    { time: "14:00 - 16:30", activity: "Deep Work", title: "Sud Hokimiyati (Seminar Prep)", desc: "Leksiyani tahlil qilish. Ertaga seminar bor! Tayyorgarlik ko'rish shart." },
+                    { time: "16:30 - 18:30", activity: "Deep Work", title: "Fuqarolik: Encoding", desc: "Bugungi leksiyani konspekt qilish va mnemonik obrazlar yaratish." },
+                    { time: "18:30 - 20:00", activity: "Integration", title: "Ingliz Tili: Civil Law", desc: "Fuqarolik huquqi bo'yicha video ko'rish va tahlil qilish." }
+                ]
+            },
+            {
+                day: "Chorshanba",
+                focus: "Seminar (Sud) & Konstitutsiya",
+                color: "purple",
+                strategy: "Ertalab Sud seminari uchun 'isinasiz'. Kechqurun esa payshanba kungi Fuqarolik seminariga tayyorlanasiz.",
+                timeline: [
+                    { time: "05:00 - 06:30", activity: "Retrieval", title: "Active Recall: Sud", desc: "Seminardan oldin mavzuni gapirib berish. Bu seminarda 'dominant' bo'lishingizni ta'minlaydi." },
+                    { time: "08:30 - 13:30", activity: "Univer", title: "Seminar: Sud / Leksiya: Konst", desc: "Seminarda faol qatnashish. Konstitutsiya leksiyasini diqqat bilan tinglash." },
+                    { time: "14:00 - 16:00", activity: "Deep Work", title: "Konstitutsiya Tahlili", desc: "Leksiyani tahlil qilish. Juma kungi seminarga zamin yaratish." },
+                    { time: "16:00 - 18:00", activity: "Skills", title: "Prof. Ko'nikmalar (2 soat)", desc: "Yuridik yozishmalar yoki notiqlik bo'yicha amaliy mashq." },
+                    { time: "18:00 - 20:00", activity: "Deep Work", title: "Fuqarolik: Seminar Prep", desc: "Ertaga Fuqarolikdan seminar bor. Seminar savollarini ishlab chiqish." }
+                ]
+            },
+            {
+                day: "Payshanba",
+                focus: "Seminar (Fuq) & Jang Tayyorgarligi",
+                color: "amber",
+                strategy: "Juma kuni eng mas'uliyatli kun (2 ta seminar). Payshanba kechquruni faqat Juma kungi jang uchun tayyorgarlik.",
+                timeline: [
+                    { time: "05:00 - 06:30", activity: "Retrieval", title: "Active Recall: Fuqarolik", desc: "Seminarga tayyorgarlik. Kecha o'qiganlaringizni eslash." },
+                    { time: "08:30 - 13:30", activity: "Univer", title: "Seminar: Fuqarolik / Ingliz tili", desc: "Seminarda 'yirtib tashlash'. Ingliz tili darsida faol bo'lish." },
+                    { time: "14:00 - 16:00", activity: "Integration", title: "Ingliz Tili (Maxsus)", desc: "Univerdagi vazifalarni bajarish va IELTS/Legal English bo'yicha shug'ullanish." },
+                    { time: "16:00 - 19:00", activity: "Deep Work", title: "Juma Prep: Konst & DHN", desc: "Ertangi 2 ta seminar uchun tayyorgarlik. Vaqtni ikkiga bo'ling." },
+                    { time: "19:00 - 20:00", activity: "Mnemonics", title: "Mnemonika: Konstitutsiya", desc: "1100 savoldan 20 tasini Konstitutsiya bilan bog'lab yodlash." }
+                ]
+            },
+            {
+                day: "Juma",
+                focus: "Jang Kuni (Double Seminar)",
+                color: "red",
+                strategy: "Haftalik cho'qqi. Ikkita muhim seminar. Kechqurun miyaga dam berish shart.",
+                timeline: [
+                    { time: "05:00 - 06:30", activity: "Retrieval", title: "Rapid Fire Recall", desc: "Konstitutsiya va DHN bo'yicha asosiy tezislarni tezkor takrorlash." },
+                    { time: "08:30 - 13:30", activity: "Univer", title: "Seminar: Konst / Seminar: DHN", desc: "Ikkala seminarda ham qo'l ko'tarib, baho olish." },
+                    { time: "14:00 - 16:00", activity: "Review", title: "Haftalik Sarhisob (Minor)", desc: "Haftalik o'tilgan barcha mavzularni bitta varaqqa chizib chiqish (Mind Map)." },
+                    { time: "16:00 - 18:00", activity: "Mnemonics", title: "Mnemonika Challenge", desc: "Miyani boshqa rejimga o'tkazish. Mnemonika bo'yicha rekord o'rnatish." },
+                    { time: "18:00 - 20:00", activity: "Rest", title: "Erkin vaqt", desc: "Ijtimoiy faollik. Burnout oldini olish uchun dam olish shart." }
+                ]
+            },
+            {
+                day: "Shanba",
+                focus: "Ijtimoiy Faollik & Dam",
+                color: "green",
+                strategy: "Miyani tiklash va ijtimoiy hayot. O'qish minimal.",
+                timeline: [
+                    { time: "Kun bo'yi", activity: "Rest", title: "Ijtimoiy Faollik", desc: "Do'stlar, oila va dam olish. Miyaga kislorod berish." }
+                ]
+            },
+            {
+                day: "Yakshanba",
+                focus: "Katta Haftalik Tahlil (Macro Review)",
+                color: "stone",
+                strategy: "Spaced Repetition uchun eng muhim kun. Hamma narsani birlashtiramiz.",
+                timeline: [
+                    { time: "Ertalab", activity: "Review", title: "Haftalik Review", desc: "O'tgan haftadagi 4 ta asosiy fanni bir-biriga bog'lab chiqish." },
+                    { time: "Tushdan keyin", activity: "Planning", title: "Keyingi Haftaga Reja", desc: "Keyingi haftadagi leksiya mavzularini ko'rib chiqish." }
+                ]
+            }
+        ];
+
+        // --- DOM MANIPULATION ---
+
+        const dayButtonsContainer = document.getElementById('day-buttons');
+        const dayContentContainer = document.getElementById('day-content');
+        let currentDayIndex = 0; // Default to Monday
+
+        function renderDayButtons() {
+            dayButtonsContainer.innerHTML = '';
+            scheduleData.forEach((data, index) => {
+                const btn = document.createElement('button');
+                const isActive = index === currentDayIndex;
+                
+                let baseClasses = "text-left px-5 py-4 rounded-xl transition-all duration-200 border w-full flex justify-between items-center group ";
+                let activeClasses = isActive 
+                    ? "bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-[1.02]" 
+                    : "bg-white text-stone-600 border-stone-200 hover:bg-stone-50 hover:border-indigo-300";
+
+                btn.className = baseClasses + activeClasses;
+                
+                // Content
+                btn.innerHTML = `
+                    <div>
+                        <span class="block font-bold text-lg">${data.day}</span>
+                        <span class="text-xs opacity-80 font-medium">${data.focus}</span>
+                    </div>
+                    <span class="text-xl opacity-0 group-hover:opacity-100 ${isActive ? 'opacity-100' : ''}">👉</span>
+                `;
+
+                btn.onclick = () => {
+                    currentDayIndex = index;
+                    renderDayButtons();
+                    renderDayContent();
+                };
+
+                dayButtonsContainer.appendChild(btn);
+            });
+        }
+
+        function renderDayContent() {
+            const data = scheduleData[currentDayIndex];
+            
+            // Build timeline HTML
+            let timelineHTML = data.timeline.map(item => `
+                <div class="relative pl-8 pb-8 border-l-2 border-indigo-100 last:pb-0 last:border-l-0">
+                    <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-indigo-600 border-4 border-white shadow-sm"></div>
+                    <div class="flex flex-col sm:flex-row sm:items-start justify-between mb-1">
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded mb-1 sm:mb-0">${item.time}</span>
+                        <span class="text-xs font-bold text-stone-400 uppercase tracking-wide">${item.activity}</span>
+                    </div>
+                    <h4 class="text-lg font-bold text-stone-800 mb-1">${item.title}</h4>
+                    <p class="text-sm text-stone-600 leading-relaxed">${item.desc}</p>
+                </div>
+            `).join('');
+
+            const contentHTML = `
+                <div class="p-6 md:p-8">
+                    <div class="flex justify-between items-start mb-6 border-b border-stone-100 pb-6">
+                        <div>
+                            <h2 class="text-3xl font-bold text-stone-900 mb-2">${data.day}</h2>
+                            <span class="inline-block px-3 py-1 bg-${data.color}-100 text-${data.color}-800 rounded-full text-sm font-medium">
+                                ${data.focus}
+                            </span>
+                        </div>
+                        <div class="hidden sm:block text-4xl opacity-20">📅</div>
+                    </div>
+                    
+                    <div class="bg-amber-50 border border-amber-100 rounded-xl p-5 mb-8">
+                        <h4 class="text-amber-800 font-bold mb-2 flex items-center">
+                            <span class="mr-2">💡</span> Harvard Strategiyasi: Nega aynan shunday?
+                        </h4>
+                        <p class="text-sm text-amber-900 leading-relaxed">
+                            ${data.strategy}
+                        </p>
+                    </div>
+
+                    <div class="mt-4">
+                        ${timelineHTML}
+                    </div>
+                </div>
+            `;
+            
+            // Fade effect
+            dayContentContainer.style.opacity = '0';
+            setTimeout(() => {
+                dayContentContainer.innerHTML = contentHTML;
+                dayContentContainer.style.opacity = '1';
+                dayContentContainer.style.transition = 'opacity 0.3s ease-in-out';
+            }, 150);
+        }
+
+        // --- GEMINI API INTEGRATION ---
+
+        async function callGemini(mode) {
+            const inputField = document.getElementById('ai-input');
+            const outputField = document.getElementById('ai-output');
+            const loadingIndicator = document.getElementById('ai-loading');
+            const userText = inputField.value.trim();
+
+            if (!userText) {
+                alert("Iltimos, mavzu yoki moddani kiriting.");
+                return;
+            }
+
+            // UI Update
+            loadingIndicator.classList.remove('hidden');
+            outputField.innerHTML = ""; // Clear previous output
+            
+            let systemInstruction = "Sen kognitiv psixologiya va huquqshunoslik bo'yicha ekspert yordamchisan. Javoblaringni O'zbek tilida ber. Justin Sung metodologiyasidan (Deep Encoding, Mnemonika, Active Recall) foydalan.";
+            let prompt = "";
+
+            if (mode === 'mnemonic') {
+                prompt = `Quyidagi huquqiy ma'lumot uchun 'Memory Palace' (Xotira Saroyi) usulida vizual, kulgili va esda qolarli mnemonika yaratib ber. Uy yoki tanish ko'cha obyektlaridan foydalan: "${userText}"`;
+            } else if (mode === 'recall') {
+                prompt = `Quyidagi mavzu bo'yicha mening tushunish darajamni tekshirish uchun 3 ta qiyin, ochiq turdagi savol (Active Recall questions) tuzib ber. Javobini yozma, faqat savol, shunda men javobni o'zim eslashga majbur bo'laman: "${userText}"`;
+            } else if (mode === 'simplify') {
+                prompt = `Quyidagi tushunchani 'Deep Encoding' usulida, analogiyalar va hayotiy misollar orqali chuqur lekin sodda tushuntirib ber. Buni boshqa huquqiy tushunchalar bilan bog'lashga harakat qil: "${userText}"`;
+            }
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        systemInstruction: { parts: [{ text: systemInstruction }] }
+                    })
+                });
+
+                if (!response.ok) throw new Error('API Error');
+
+                const data = await response.json();
+                const aiResponse = data.candidates[0].content.parts[0].text;
+
+                // Format Markdown to basic HTML (Simple parser)
+                const formattedResponse = aiResponse
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n/g, '<br>');
+
+                outputField.innerHTML = `<div class="animate-fade-in">${formattedResponse}</div>`;
+
+            } catch (error) {
+                console.error("Gemini Error:", error);
+                outputField.innerHTML = `<span class="text-red-500">Xatolik yuz berdi. Qayta urinib ko'ring.</span>`;
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        // --- CHARTS INITIALIZATION ---
+
+        function initCharts() {
+            // Chart 1: Mental Effort
+            const ctxEffort = document.getElementById('effortChart').getContext('2d');
+            new Chart(ctxEffort, {
+                type: 'line',
+                data: {
+                    labels: ['05:00', '07:00', '08:30', '13:30', '14:00', '16:00', '18:00', '20:00'],
+                    datasets: [{
+                        label: 'Mental Effort (Aqliy Yuklama)',
+                        data: [90, 30, 75, 50, 85, 60, 80, 20], // High in morning recall, High in Deep Work
+                        borderColor: '#4f46e5', // indigo-600
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#4f46e5',
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: { display: true, text: 'Intensivlik %' },
+                            grid: { color: '#f5f5f4' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.raw + '% - ' + (context.raw > 80 ? '🔥 Yuqori Fokus' : (context.raw < 40 ? '🍃 Dam olish' : '⚡ O\'rta Faollik'));
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Subject Breakdown
+            const ctxSubject = document.getElementById('subjectChart').getContext('2d');
+            new Chart(ctxSubject, {
+                type: 'doughnut',
+                data: {
+                    labels: ['DHN', 'Sud Hokimiyati', 'Konstitutsiya', 'Fuqarolik', 'Ingliz/Skills'],
+                    datasets: [{
+                        data: [20, 20, 20, 20, 20], // Balanced Approach
+                        backgroundColor: [
+                            '#3b82f6', // blue
+                            '#6366f1', // indigo
+                            '#a855f7', // purple
+                            '#f59e0b', // amber
+                            '#10b981'  // green
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: { family: 'sans-serif', size: 11 }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        // --- METHODOLOGY INTERACTION ---
+        const methodTerms = {
+            'spaced': { title: 'Spaced Repetition', desc: 'Ma\'lumotni unutish arafasida turgan paytda takrorlash. Biz har kuni hamma narsani emas, faqat 1, 3 va 7 kun oldingi mavzularni takrorlaymiz.' },
+            'encoding': { title: 'Deep Encoding', desc: 'Ma\'lumotni shunchaki o\'qish emas, uni mavjud bilimga bog\'lash. "Nega?" va "Qanday?" degan savollarni berish orqali yangi neyron aloqalarini hosil qilish.' },
+            'recall': { title: 'Active Recall', desc: 'Kitobni yopib, oq qog\'ozga eslagan narsalarni yozish. Bu jarayon miyani "terlatadi" va xotirani eng kuchli mustahkamlovchi usuldir.' },
+            'mnemonics': { title: 'Memory Palace', desc: 'Huquqiy moddalarni yaxshi tanish bo\'lgan joy (uy, ko\'cha)dagi obyektlarga bog\'lash. 1100 ta savolni yodlash uchun eng yaxshi usul.' }
+        };
+
+        const displayBox = document.getElementById('term-display');
+        const termTitle = document.getElementById('term-title');
+        const termDesc = document.getElementById('term-desc');
+
+        document.querySelectorAll('.method-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const termKey = card.getAttribute('data-term');
+                const data = methodTerms[termKey];
+                
+                termTitle.textContent = data.title;
+                termDesc.textContent = data.desc;
+                
+                displayBox.classList.remove('hidden');
+                displayBox.classList.add('block', 'animate-pulse');
+                setTimeout(() => displayBox.classList.remove('animate-pulse'), 500);
+            });
+        });
+
+        // --- INITIALIZATION ---
+        window.addEventListener('DOMContentLoaded', () => {
+            renderDayButtons();
+            renderDayContent();
+            initCharts();
+        });
+
+    </script>
+
+    <!-- Chosen Palette: Warm Neutrals (Stone) with Academic Indigo & Law Blue -->
+    <!-- Application Structure Plan: 
+         1. Header: Status indication (Sprint Mode).
+         2. Intro: Brief philosophy explanation to set context.
+         3. Interactive Schedule (Core): Grid layout for days on left, detail view on right. This prevents scrolling fatigue and focuses attention on one day at a time (Cognitive Load management).
+         4. AI Cognitive Lab (NEW): Dedicated section for Gemini API interaction (Mnemonics, Questions, Simplify).
+         5. Analytics: Visual proof of the "balance" in the schedule using Chart.js.
+         6. Methodology Tool: Interactive cards to reinforce the learning definitions without cluttering the main view.
+    -->
+    <!-- Visualization & Content Choices:
+         - Line Chart for Mental Effort: Shows the "Twin Peaks" strategy (Morning Recall + Afternoon Deep Work).
+         - Doughnut Chart: Shows the balanced distribution of the 4 law subjects.
+         - Timeline View: Uses HTML/CSS borders to visualize the flow of the day vertically.
+         - NO SVG/Mermaid: All icons are Unicode or CSS shapes. Charts are Canvas (Chart.js).
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</body>
+</html>
