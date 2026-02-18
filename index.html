@@ -361,7 +361,7 @@
     <!-- Gameplay Modal -->
     <div class="modal-overlay" id="playModal">
         <div class="modal-content">
-            <div class="timer" id="timer">30</div>
+            <div class="timer" id="timer">10</div>
             <div class="question-text" id="playQuestion">Question...</div>
             
             <button class="btn btn-primary" style="font-size: 1.2rem;" id="showAnswerBtn" onclick="revealAnswer()">Show Answer</button>
@@ -574,7 +574,7 @@
         }
 
         function startTimer() {
-            let timeLeft = 30;
+            let timeLeft = 10;
             const timerEl = document.getElementById('timer');
             timerEl.innerText = timeLeft;
             timerEl.style.color = "var(--gold)";
