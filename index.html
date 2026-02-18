@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Legal Jeopardy - Pro</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <title>Legal Jeopardy - Fixed 5x5</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
             --navy-blue: #002147;
@@ -16,400 +15,517 @@
             --delete: #ef4444;
             --modal-bg: rgba(0, 33, 71, 0.98);
         }
-        body {font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background-color: var(--light-gray);margin: 0;display: flex;flex-direction: column;align-items: center;min-height: 100vh;padding-bottom: 50px;}
-        header {background-color: var(--navy-blue);color: var(--white);width: 100%;padding: 15px 20px;display: flex;justify-content: space-between;align-items: center;box-shadow: 0 4px 6px rgba(0,0,0,0.1);box-sizing: border-box;z-index: 10;}
-        h1 {margin: 0;font-size: 1.8rem;text-transform: uppercase;letter-spacing: 2px;color: var(--gold);}
-        .control-panel {display: flex;gap: 10px;flex-wrap: wrap;}
-        .btn {padding: 8px 16px;border: none;border-radius: 4px;cursor: pointer;font-weight: bold;transition: all 0.2s;font-size: 0.9rem;}
-        .btn-primary {background-color: var(--gold);color: var(--navy-blue);}
-        .btn-primary:hover {background-color: #d4a017;}
-        .btn-danger {background-color: var(--delete);color: white;}
-        .btn-danger:hover {background-color: #dc2626;}
-        .btn-outline {background-color: transparent;border: 1px solid var(--white);color: var(--white);}
-        .btn-outline:hover {background-color: rgba(255,255,255,0.1);}
-        .scoreboard {display: flex;justify-content: center;gap: 15px;margin: 20px 0;padding: 15px;background: white;border-radius: 10px;box-shadow: 0 2px 4px rgba(0,0,0,0.1);position: sticky;top: 0;z-index: 5;flex-wrap: wrap;max-width: 95%;}
-        .team-score {text-align: center;background: #f8fafc;padding: 8px;border-radius: 8px;border: 1px solid #e2e8f0;position: relative;min-width: 140px;}
-        .team-score input[type="text"] {border: none;background: transparent;border-bottom: 2px solid var(--navy-blue);font-size: 1rem;text-align: center;width: 100%;margin-bottom: 5px;font-weight: bold;color: var(--navy-blue);}
-        .team-score .score-display {font-size: 1.5rem;font-weight: 800;color: var(--gold);display: block;}
-        .score-adjust {display: flex;justify-content: center;gap: 5px;margin-top: 5px;}
-        .score-adjust button {background: #e2e8f0;border: none;border-radius: 50%;width: 24px;height: 24px;cursor: pointer;font-weight: bold;color: var(--navy-blue);}
-        .game-board {display: grid;grid-template-columns: repeat(5, 1fr);gap: 15px;width: 95%;max-width: 1400px;margin-bottom: 40px;}
-        .column {display: flex;flex-direction: column;gap: 10px;}
-        .category-header {background-color: var(--navy-blue);color: var(--white);padding: 10px;text-align: center;font-weight: bold;font-size: 1rem;border-radius: 6px;border: 2px solid var(--gold);height: 80px;display: flex;align-items: center;justify-content: center;text-transform: uppercase;position: relative;word-break: break-word;}
-        .category-header input {background: transparent;border: none;color: white;text-align: center;font-weight: bold;font-size: 1rem;width: 100%;font-family: inherit;}
-        .card {background-color: var(--white);height: 90px;display: flex;align-items: center;justify-content: center;font-size: 2rem;font-weight: bold;color: var(--navy-blue);cursor: pointer;border-radius: 6px;box-shadow: 0 3px 5px rgba(0,0,0,0.1);transition: all 0.25s cubic-bezier(0.4,0,0.2,1);border: 1px solid #ddd;position: relative;user-select: none;}
-        .card:hover {transform: translateY(-3px) scale(1.02);background-color: var(--navy-blue);color: var(--gold);border-color: var(--gold);}
-        .card.disabled {background-color: #cbd5e1;color: #94a3b8;cursor: default;transform: none;border-color: transparent;box-shadow: none;}
-        .card.daily {background: linear-gradient(135deg, #7c3aed, #c026d3);color: white;border: 3px solid #fbbf24;}
-        .card.daily::after {content: "DD";position: absolute;top: 6px;right: 8px;font-size: 0.7rem;background: #fbbf24;color: #000;padding: 2px 6px;border-radius: 4px;font-weight: 900;}
-        .card.solved {background: #cbd5e1;color: #64748b;}
-        .edit-mode .card {border: 2px dashed var(--gold);background-color: #fffbeb;}
-        .modal-overlay {display: none;position: fixed;top: 0;left: 0;width: 100%;height: 100%;background-color: var(--modal-bg);z-index: 1000;justify-content: center;align-items: center;backdrop-filter: blur(5px);}
-        .modal-content {background-color: var(--white);padding: 40px;border-radius: 15px;max-width: 900px;width: 90%;text-align: center;position: relative;border: 4px solid var(--gold);box-shadow: 0 25px 50px rgba(0,0,0,0.5);}
-        .timer {font-size: 4rem;font-weight: 800;color: var(--gold);margin-bottom: 20px;text-shadow: 2px 2px 0px var(--navy-blue);}
-        .timer-container {height: 10px;background: #e2e8f0;border-radius: 9999px;margin: 15px 0;overflow: hidden;}
-        .timer-progress {height: 100%;background: linear-gradient(to right, var(--correct), var(--gold));width: 100%;transition: width 0.1s linear;}
-        .question-text {font-size: 2.2rem;color: var(--navy-blue);margin-bottom: 30px;font-weight: 600;}
-        .answer-text {font-size: 1.8rem;color: var(--correct);font-weight: bold;margin-top: 20px;display: none;padding: 20px;background-color: #f0fdf4;border-radius: 10px;border: 2px solid var(--correct);}
-        .action-buttons {margin-top: 20px;display: none;flex-wrap: wrap;justify-content: center;gap: 10px;border-top: 1px solid #eee;padding-top: 20px;}
-        .edit-form {display: flex;flex-direction: column;gap: 15px;text-align: left;}
-        .edit-form label {font-weight: bold;color: var(--navy-blue);}
-        .edit-form input, .edit-form textarea {padding: 10px;border: 1px solid #ccc;border-radius: 4px;font-size: 1rem;font-family: inherit;}
-        .read-only-field {background-color: #f3f4f6;color: #666;cursor: not-allowed;}
-        .hidden {display: none !important;}
-        .status {position: absolute;top: 10px;right: 15px;background: rgba(255,255,255,0.2);padding: 4px 12px;border-radius: 9999px;font-size: 0.9rem;font-weight: 600;color: white;}
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-gray);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+
+        /* --- Header & Controls --- */
+        header {
+            background-color: var(--navy-blue);
+            color: var(--white);
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--gold);
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary { background-color: var(--gold); color: var(--navy-blue); }
+        .btn-primary:hover { background-color: #d4a017; }
+        
+        .btn-danger { background-color: var(--delete); color: white; }
+        .btn-danger:hover { background-color: #dc2626; }
+
+        .btn-outline { background-color: transparent; border: 1px solid var(--white); color: var(--white); }
+        .btn-outline:hover { background-color: rgba(255,255,255,0.1); }
+
+        /* --- Scoreboard --- */
+        .scoreboard {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            flex-wrap: wrap;
+            max-width: 95%;
+        }
+
+        .team-score {
+            text-align: center;
+            background: #f8fafc;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            position: relative;
+            min-width: 140px;
+        }
+
+        .team-score input[type="text"] {
+            border: none;
+            background: transparent;
+            border-bottom: 2px solid var(--navy-blue);
+            font-size: 1rem;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--navy-blue);
+        }
+
+        .team-score .score-display {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--gold);
+            display: block;
+        }
+
+        .score-adjust {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .score-adjust button {
+            background: #e2e8f0;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--navy-blue);
+        }
+
+        /* --- Game Board --- */
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); /* Strict 5 columns */
+            gap: 15px;
+            width: 95%;
+            max-width: 1400px;
+            margin-bottom: 40px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .category-header {
+            background-color: var(--navy-blue);
+            color: var(--white);
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+            border-radius: 6px;
+            border: 2px solid var(--gold);
+            height: 80px; /* Fixed height for consistency */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+            position: relative;
+            word-break: break-word;
+        }
+        
+        .category-header input {
+            background: transparent;
+            border: none;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+            width: 100%;
+            font-family: inherit;
+        }
+        
+        /* Edit indicator for categories */
+        .category-header .edit-icon {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 10px;
+            color: var(--gold);
+            display: none;
+        }
+
+        .card {
+            background-color: var(--white);
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--navy-blue);
+            cursor: pointer;
+            border-radius: 6px;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+            border: 1px solid #ddd;
+            position: relative;
+            user-select: none;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            background-color: var(--navy-blue);
+            color: var(--gold);
+            border-color: var(--gold);
+        }
+
+        .card.disabled {
+            background-color: #cbd5e1;
+            color: #94a3b8;
+            cursor: default;
+            transform: none;
+            border-color: transparent;
+            box-shadow: none;
+        }
+        
+        /* Edit Mode Styling */
+        .edit-mode .card {
+            border: 2px dashed var(--gold);
+            background-color: #fffbeb; /* Slight yellow tint to indicate editable */
+        }
+        
+        .edit-mode .card:hover {
+            transform: none;
+            background-color: #fef3c7;
+            color: var(--navy-blue);
+            cursor: text;
+        }
+        
+        .edit-mode .category-header {
+            border: 2px dashed white;
+        }
+        
+        .edit-mode .category-header input {
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+
+        /* --- Modals --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--modal-bg);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 900px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            border: 4px solid var(--gold);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        /* Gameplay Modal */
+        .timer {
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--gold);
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0px var(--navy-blue);
+        }
+
+        .question-text {
+            font-size: 2.2rem;
+            color: var(--navy-blue);
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .answer-text {
+            font-size: 1.8rem;
+            color: var(--correct);
+            font-weight: bold;
+            margin-top: 20px;
+            display: none;
+            padding: 20px;
+            background-color: #f0fdf4;
+            border-radius: 10px;
+            border: 2px solid var(--correct);
+        }
+
+        .action-buttons {
+            margin-top: 20px;
+            display: none;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        /* Edit Modal */
+        .edit-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: left;
+        }
+        
+        .edit-form label { font-weight: bold; color: var(--navy-blue); }
+        .edit-form input, .edit-form textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .read-only-field {
+            background-color: #f3f4f6;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        /* Helper Utilities */
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1><i class="fas fa-gavel"></i> Legal Jeopardy Pro</h1>
+        <h1><i class="fas fa-gavel"></i> Legal Jeopardy</h1>
         <div class="control-panel">
             <button class="btn btn-outline" onclick="resetGameLogic()">Reset Game</button>
-            <button class="btn btn-outline" onclick="restoreDefaults()">Restore Defaults</button>
             <button class="btn btn-primary" id="editToggleBtn" onclick="toggleEditMode()">Edit Mode: OFF</button>
-            <div class="status" id="remainingStatus">Qolgan: 25/25</div>
         </div>
     </header>
 
-    <div class="scoreboard" id="scoreboard"></div>
+    <div class="scoreboard" id="scoreboard">
+        <!-- Teams generated by JS -->
+    </div>
 
-    <div class="game-board" id="gameBoard"></div>
+    <div class="game-board" id="gameBoard">
+        <!-- Grid generated by JS -->
+    </div>
 
     <!-- Gameplay Modal -->
     <div class="modal-overlay" id="playModal">
         <div class="modal-content">
             <div class="timer" id="timer">30</div>
-            <div class="timer-container"><div class="timer-progress" id="timerProgress"></div></div>
-            <div class="question-text" id="playQuestion">Savol...</div>
-            <button class="btn btn-primary" id="showAnswerBtn" onclick="revealAnswer()">Javobni ko‘rsatish</button>
-            <div class="answer-text" id="playAnswer">Javob...</div>
-            <div class="action-buttons" id="playActions"></div>
+            <div class="question-text" id="playQuestion">Question...</div>
+            
+            <button class="btn btn-primary" style="font-size: 1.2rem;" id="showAnswerBtn" onclick="revealAnswer()">Show Answer</button>
+            
+            <div class="answer-text" id="playAnswer">Answer...</div>
+            
+            <div class="action-buttons" id="playActions">
+                <p style="width: 100%; color: #666; margin-bottom: 10px;">Who answered correctly?</p>
+                <!-- Team buttons injected here -->
+                <div style="width: 100%; margin-top: 10px;">
+                    <button class="btn btn-danger" onclick="closePlayModal(false)">No one / Skip</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Daily Double Wager Modal -->
-    <div class="modal-overlay" id="ddModal">
-        <div class="modal-content" style="max-width:500px;">
-            <h2 style="color:var(--navy-blue);">DAILY DOUBLE!</h2>
-            <p id="ddQuestion" style="font-size:1.4rem;margin:20px 0;"></p>
-            <div>
-                <label style="display:block;margin:10px 0 5px;font-weight:bold;">Qaysi jamoa javob beradi?</label>
-                <div id="ddTeamButtons" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;"></div>
-            </div>
-            <div id="wagerSection" style="margin-top:20px;display:none;">
-                <label style="display:block;margin:10px 0 5px;font-weight:bold;">Wager (ball) kiriting:</label>
-                <input type="number" id="wagerInput" style="width:100%;padding:12px;font-size:1.2rem;text-align:center;" min="100" value="500">
-            </div>
-            <button class="btn btn-primary" onclick="startDailyDouble()" style="margin-top:15px;">Davom ettirish</button>
-        </div>
-    </div>
-
-    <!-- Final Jeopardy Modal -->
-    <div class="modal-overlay" id="finalModal">
-        <div class="modal-content" style="max-width:700px;">
-            <h2 style="color:var(--navy-blue);">FINAL JEOPARDY</h2>
-            <div class="question-text" id="finalQuestion">Final savol...</div>
-            <div id="finalWagerArea">
-                <p>Jamoalar wager qo‘ying (hozirgi ballingizdan ko‘p bo‘lmasin)</p>
-                <div id="finalTeams" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;"></div>
-            </div>
-            <button class="btn btn-primary" onclick="revealFinalAnswer()" id="finalRevealBtn" style="margin-top:20px;">Javobni ko‘rsatish</button>
-            <div class="answer-text" id="finalAnswer" style="display:none;"></div>
-            <button class="btn btn-primary" onclick="finishGame()" style="margin-top:15px;">O‘yinni tugatish</button>
-        </div>
-    </div>
-
-    <!-- Edit Modal (o‘zgarmadi) -->
+    <!-- Edit Modal (Fixed Structure) -->
     <div class="modal-overlay" id="editModal">
-        <div class="modal-content" style="max-width:600px;">
-            <h2 style="color:var(--navy-blue);margin-top:0;">Savolni tahrirlash</h2>
+        <div class="modal-content" style="max-width: 600px;">
+            <h2 style="color: var(--navy-blue); margin-top:0;">Edit Question Content</h2>
             <div class="edit-form">
                 <input type="hidden" id="editCategoryId">
                 <input type="hidden" id="editQuestionId">
                 <div>
-                    <label>Ball (o‘zgarmaydi)</label>
+                    <label>Points Value (Fixed)</label>
                     <input type="number" id="editPoints" class="read-only-field" readonly>
                 </div>
                 <div>
-                    <label>Savol</label>
-                    <textarea id="editQuestionText" rows="3"></textarea>
+                    <label>Question</label>
+                    <textarea id="editQuestionText" rows="3" placeholder="Enter the question here..."></textarea>
                 </div>
                 <div>
-                    <label>Javob</label>
-                    <textarea id="editAnswerText" rows="3"></textarea>
+                    <label>Answer</label>
+                    <textarea id="editAnswerText" rows="3" placeholder="Enter the correct answer here..."></textarea>
                 </div>
-                <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px;">
-                    <button class="btn btn-outline" onclick="closeEditModal()">Bekor qilish</button>
-                    <button class="btn btn-primary" onclick="saveQuestionChanges()">Saqlash</button>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+                    <button class="btn btn-outline" style="color: #666; border-color: #ccc;" onclick="closeEditModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="saveQuestionChanges()">Save Changes</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const defaultData = [ /* Siz bergan 5 ta kategoriya va 25 ta savol to‘liq saqlangan */ 
-            {id:'cat1',title:'Global Systems',questions:[{id:'q1-1',points:100,q:"In this country, lawyers are divided into Barristers and Solicitors.",a:"United Kingdom",solved:false},{id:'q1-2',points:200,q:"The unified term for all lawyers in the USA.",a:"Attorney (Attorney at Law)",solved:false},{id:'q1-3',points:300,q:"Who is known as the 'Preventive Judge' in Civil Law systems?",a:"Notary",solved:false},{id:'q1-4',points:400,q:"In an Adversarial system, what is the main role of the Judge?",a:"Neutral Referee / Umpire",solved:false},{id:'q1-5',points:500,q:"The legal principle where a person cannot be tried twice for the same crime.",a:"Double Jeopardy",solved:false}]},
-            /* cat2, cat3, cat4, cat5 ham xuddi shunday (siz bergan to‘liq matn bilan) */
-            {id:'cat2',title:'Uzbekistan',questions:[{id:'q2-1',points:100,q:"Which chapter of the Constitution is dedicated to Advocacy?",a:"Chapter XXIV",solved:false},{id:'q2-2',points:200,q:"Can an advocate be a state civil servant?",a:"No (except for scientific/teaching roles)",solved:false},{id:'q2-3',points:300,q:"Who are known as the 'Legal Shield' of organizations?",a:"Legal Advisors (Jurisconsults)",solved:false},{id:'q2-4',points:400,q:"The national online database of legislation in Uzbekistan.",a:"Lex.uz",solved:false},{id:'q2-5',points:500,q:"The highest judicial body for constitutional review in Uzbekistan.",a:"Constitutional Court",solved:false}]},
-            {id:'cat3',title:'Legal Professions',questions:[{id:'q3-1',points:100,q:"Official who supports the state accusation in court.",a:"Prosecutor",solved:false},{id:'q3-2',points:200,q:"Professional responsible for finding facts and evidence in criminal cases.",a:"Investigator",solved:false},{id:'q3-3',points:300,q:"According to the presentation, what are the lawyer's two main tools?",a:"The Word (Oratory) and Logic",solved:false},{id:'q3-4',points:400,q:"Student practice program providing free legal aid to the community.",a:"Street Law (Legal Clinic)",solved:false},{id:'q3-5',points:500,q:"Latin term meaning 'for the public good', referring to free legal work.",a:"Pro Bono",solved:false}]},
-            {id:'cat4',title:'Future & Tech',questions:[{id:'q4-1',points:100,q:"Digital portal for Ministry of Justice services.",a:"my.gov.uz / adliya.uz",solved:false},{id:'q4-2',points:200,q:"Alternative dispute resolution for global business (non-court).",a:"International Commercial Arbitration",solved:false},{id:'q4-3',points:300,q:"An essential skill for 21st-century lawyers besides legal knowledge.",a:"Technology / Soft Skills / Ethics",solved:false},{id:'q4-4',points:400,q:"A niche field of law mentioned (e.g., related to oceans or animals).",a:"Maritime Law or Animal Rights Law",solved:false},{id:'q4-5',points:500,q:"A self-executing contract with the terms directly written into code.",a:"Smart Contract",solved:false}]},
-            {id:'cat5',title:'Legal Terms',questions:[{id:'q5-1',points:100,q:"The person or party who initiates a lawsuit.",a:"Plaintiff",solved:false},{id:'q5-2',points:200,q:"A formal written statement used as evidence in court.",a:"Affidavit",solved:false},{id:'q5-3',points:300,q:"Latin term for 'bad faith'.",a:"Mala Fide",solved:false},{id:'q5-4',points:400,q:"The conditional release of a prisoner before the full sentence is served.",a:"Parole",solved:false},{id:'q5-5',points:500,q:"A court order requiring a person to do or cease doing a specific action.",a:"Injunction",solved:false}]}
+        // --- 5x5 Fixed Data Structure ---
+        // Added 5th category and 500pt questions to match requirements
+        const defaultData = [
+            {
+                id: 'cat1',
+                title: 'Global Systems',
+                questions: [
+                    { id: 'q1-1', points: 100, q: "In this country, lawyers are divided into Barristers and Solicitors.", a: "United Kingdom", solved: false },
+                    { id: 'q1-2', points: 200, q: "The unified term for all lawyers in the USA.", a: "Attorney (Attorney at Law)", solved: false },
+                    { id: 'q1-3', points: 300, q: "Who is known as the 'Preventive Judge' in Civil Law systems?", a: "Notary", solved: false },
+                    { id: 'q1-4', points: 400, q: "In an Adversarial system, what is the main role of the Judge?", a: "Neutral Referee / Umpire", solved: false },
+                    { id: 'q1-5', points: 500, q: "The legal principle where a person cannot be tried twice for the same crime.", a: "Double Jeopardy", solved: false }
+                ]
+            },
+            {
+                id: 'cat2',
+                title: 'Uzbekistan',
+                questions: [
+                    { id: 'q2-1', points: 100, q: "Which chapter of the Constitution is dedicated to Advocacy?", a: "Chapter XXIV", solved: false },
+                    { id: 'q2-2', points: 200, q: "Can an advocate be a state civil servant?", a: "No (except for scientific/teaching roles)", solved: false },
+                    { id: 'q2-3', points: 300, q: "Who are known as the 'Legal Shield' of organizations?", a: "Legal Advisors (Jurisconsults)", solved: false },
+                    { id: 'q2-4', points: 400, q: "The national online database of legislation in Uzbekistan.", a: "Lex.uz", solved: false },
+                    { id: 'q2-5', points: 500, q: "The highest judicial body for constitutional review in Uzbekistan.", a: "Constitutional Court", solved: false }
+                ]
+            },
+            {
+                id: 'cat3',
+                title: 'Legal Professions',
+                questions: [
+                    { id: 'q3-1', points: 100, q: "Official who supports the state accusation in court.", a: "Prosecutor", solved: false },
+                    { id: 'q3-2', points: 200, q: "Professional responsible for finding facts and evidence in criminal cases.", a: "Investigator", solved: false },
+                    { id: 'q3-3', points: 300, q: "According to the presentation, what are the lawyer's two main tools?", a: "The Word (Oratory) and Logic", solved: false },
+                    { id: 'q3-4', points: 400, q: "Student practice program providing free legal aid to the community.", a: "Street Law (Legal Clinic)", solved: false },
+                    { id: 'q3-5', points: 500, q: "Latin term meaning 'for the public good', referring to free legal work.", a: "Pro Bono", solved: false }
+                ]
+            },
+            {
+                id: 'cat4',
+                title: 'Future & Tech',
+                questions: [
+                    { id: 'q4-1', points: 100, q: "Digital portal for Ministry of Justice services.", a: "my.gov.uz / adliya.uz", solved: false },
+                    { id: 'q4-2', points: 200, q: "Alternative dispute resolution for global business (non-court).", a: "International Commercial Arbitration", solved: false },
+                    { id: 'q4-3', points: 300, q: "An essential skill for 21st-century lawyers besides legal knowledge.", a: "Technology / Soft Skills / Ethics", solved: false },
+                    { id: 'q4-4', points: 400, q: "A niche field of law mentioned (e.g., related to oceans or animals).", a: "Maritime Law or Animal Rights Law", solved: false },
+                    { id: 'q4-5', points: 500, q: "A self-executing contract with the terms directly written into code.", a: "Smart Contract", solved: false }
+                ]
+            },
+            {
+                id: 'cat5',
+                title: 'Legal Terms',
+                questions: [
+                    { id: 'q5-1', points: 100, q: "The person or party who initiates a lawsuit.", a: "Plaintiff", solved: false },
+                    { id: 'q5-2', points: 200, q: "A formal written statement used as evidence in court.", a: "Affidavit", solved: false },
+                    { id: 'q5-3', points: 300, q: "Latin term for 'bad faith'.", a: "Mala Fide", solved: false },
+                    { id: 'q5-4', points: 400, q: "The conditional release of a prisoner before the full sentence is served.", a: "Parole", solved: false },
+                    { id: 'q5-5', points: 500, q: "A court order requiring a person to do or cease doing a specific action.", a: "Injunction", solved: false }
+                ]
+            }
         ];
 
         let gameData = JSON.parse(JSON.stringify(defaultData));
-        let teams = [{id:1,name:"Team 1",score:0},{id:2,name:"Team 2",score:0},{id:3,name:"Team 3",score:0},{id:4,name:"Team 4",score:0},{id:5,name:"Team 5",score:0}];
+        
+        // Fixed 5 Teams
+        let teams = [
+            { id: 1, name: "Team 1", score: 0 },
+            { id: 2, name: "Team 2", score: 0 },
+            { id: 3, name: "Team 3", score: 0 },
+            { id: 4, name: "Team 4", score: 0 },
+            { id: 5, name: "Team 5", score: 0 }
+        ];
+
         let isEditMode = false;
         let currentActiveCard = null;
-        let timerInterval, timeLeft = 30;
-        let dailyDoubles = [];
-        let isFinalJeopardy = false;
+        let timerInterval;
 
-        function saveGame() {
-            localStorage.setItem('legalJeopardyState', JSON.stringify({gameData, teams}));
-        }
-
-        function loadGame() {
-            const saved = localStorage.getItem('legalJeopardyState');
-            if (saved) {
-                const state = JSON.parse(saved);
-                gameData = state.gameData || JSON.parse(JSON.stringify(defaultData));
-                teams = state.teams || teams;
-            }
-        }
-
-        function restoreDefaults() {
-            if (!confirm("Default savollarni tiklash? Jamoa ballari saqlanadi.")) return;
-            gameData = JSON.parse(JSON.stringify(defaultData));
-            renderBoard();
-            updateRemaining();
-            saveGame();
-        }
-
-        function assignDailyDoubles() {
-            dailyDoubles = [];
-            gameData.forEach(cat => cat.questions.forEach(q => q.isDailyDouble = false));
-            let count = 0;
-            while (count < 3) {
-                const cIdx = Math.floor(Math.random() * 5);
-                const qIdx = Math.floor(Math.random() * 5);
-                const q = gameData[cIdx].questions[qIdx];
-                if (!q.isDailyDouble) {
-                    q.isDailyDouble = true;
-                    dailyDoubles.push({catId: gameData[cIdx].id, qId: q.id});
-                    count++;
-                }
-            }
-        }
-
+        // --- Core Rendering ---
         function renderBoard() {
             const board = document.getElementById('gameBoard');
             board.innerHTML = '';
-            let solvedCount = 0;
+
             gameData.forEach((category) => {
                 const col = document.createElement('div');
                 col.className = 'column';
-                col.innerHTML = `<div class="category-header">${isEditMode ? `<input type="text" value="${category.title}" onchange="updateCategoryTitle('${category.id}', this.value)">` : category.title}</div>`;
+                
+                // Category Header (Editable Title only)
+                col.innerHTML = `
+                    <div class="category-header">
+                        ${isEditMode 
+                            ? `<input type="text" value="${category.title}" onchange="updateCategoryTitle('${category.id}', this.value)">` 
+                            : category.title}
+                    </div>
+                `;
+
                 category.questions.forEach(q => {
-                    if (q.solved) solvedCount++;
                     const card = document.createElement('div');
-                    card.className = `card ${q.solved ? 'solved disabled' : ''} ${q.isDailyDouble && !q.solved ? 'daily' : ''}`;
+                    card.className = `card ${q.solved ? 'disabled' : ''}`;
+                    // In edit mode, click opens edit modal. In play mode, opens play modal.
                     card.onclick = () => {
                         if (isEditMode) openEditModal(category.id, q);
-                        else if (!q.solved) handleCardClick(q, category.id);
+                        else handleCardClick(q, category.id);
                     };
-                    card.innerHTML = q.solved && !isEditMode ? `<i class="fas fa-check"></i>` : q.points;
+                    
+                    if(q.solved && !isEditMode) {
+                        card.innerHTML = `<i class="fas fa-check"></i>`;
+                    } else {
+                        card.innerText = q.points;
+                    }
                     col.appendChild(card);
                 });
+
                 board.appendChild(col);
             });
-            updateRemaining();
-            if (solvedCount === 25) showFinalJeopardy();
-        }
 
-        function updateRemaining() {
-            let remaining = 0;
-            gameData.forEach(c => c.questions.forEach(q => {if (!q.solved) remaining++;}));
-            document.getElementById('remainingStatus').innerHTML = `Qolgan: ${remaining}/25`;
-        }
-
-        function handleCardClick(questionObj, catId) {
-            if (questionObj.solved) return;
-            currentActiveCard = {...questionObj, catId};
-            if (questionObj.isDailyDouble) {
-                showDailyDoubleModal();
-                return;
-            }
-            document.getElementById('playQuestion').innerText = questionObj.q;
-            document.getElementById('playAnswer').innerText = questionObj.a;
-            document.getElementById('playAnswer').style.display = 'none';
-            document.getElementById('playActions').style.display = 'none';
-            document.getElementById('showAnswerBtn').style.display = 'inline-block';
-            setupTeamButtons(questionObj.points);
-            document.getElementById('playModal').style.display = 'flex';
-            startTimer();
-        }
-
-        function showDailyDoubleModal() {
-            document.getElementById('ddQuestion').innerText = currentActiveCard.q;
-            const btnDiv = document.getElementById('ddTeamButtons');
-            btnDiv.innerHTML = '';
-            teams.forEach(team => {
-                const b = document.createElement('button');
-                b.className = 'btn btn-primary';
-                b.innerText = team.name;
-                b.onclick = () => {
-                    currentActiveCard.controllingTeam = team.id;
-                    document.getElementById('wagerSection').style.display = 'block';
-                };
-                btnDiv.appendChild(b);
-            });
-            document.getElementById('ddModal').style.display = 'flex';
-        }
-
-        function startDailyDouble() {
-            const wager = parseInt(document.getElementById('wagerInput').value) || 500;
-            currentActiveCard.wager = wager;
-            document.getElementById('ddModal').style.display = 'none';
-            document.getElementById('playQuestion').innerText = currentActiveCard.q;
-            document.getElementById('playAnswer').innerText = currentActiveCard.a;
-            document.getElementById('playModal').style.display = 'flex';
-            startTimer();
-        }
-
-        function setupTeamButtons(points) {
-            const actionsDiv = document.getElementById('playActions');
-            actionsDiv.innerHTML = `<p style="width:100%;color:#666;margin-bottom:10px;">Kim to‘g‘ri javob berdi?</p>`;
-            teams.forEach(team => {
-                const btn = document.createElement('button');
-                btn.className = 'btn btn-primary';
-                btn.style.margin = '5px';
-                btn.innerText = `${team.name} (+${points})`;
-                btn.onclick = () => closePlayModal(true, team.id, points);
-                actionsDiv.appendChild(btn);
-            });
-            const skip = document.createElement('button');
-            skip.className = 'btn btn-danger';
-            skip.innerText = 'Hech kim / Skip';
-            skip.onclick = () => closePlayModal(false);
-            actionsDiv.appendChild(skip);
-            actionsDiv.style.display = 'flex';
-        }
-
-        function startTimer() {
-            timeLeft = 30;
-            const timerEl = document.getElementById('timer');
-            const progress = document.getElementById('timerProgress');
-            timerEl.innerText = timeLeft;
-            progress.style.width = '100%';
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                timerEl.innerText = timeLeft;
-                progress.style.width = `${timeLeft * 3.333}%`;
-                if (timeLeft <= 5) timerEl.style.color = var(--delete);
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    closePlayModal(false);
-                }
-            }, 1000);
-        }
-
-        function revealAnswer() {
-            document.getElementById('playAnswer').style.display = 'block';
-            document.getElementById('playActions').style.display = 'flex';
-            document.getElementById('showAnswerBtn').style.display = 'none';
-            clearInterval(timerInterval);
-        }
-
-        function closePlayModal(scored, teamId, points = currentActiveCard ? currentActiveCard.points : 0) {
-            document.getElementById('playModal').style.display = 'none';
-            clearInterval(timerInterval);
-            if (!currentActiveCard) return;
-            const cat = gameData.find(c => c.id === currentActiveCard.catId);
-            const q = cat.questions.find(qq => qq.id === currentActiveCard.id);
-            if (q) q.solved = true;
-            if (scored && teamId) {
-                const team = teams.find(t => t.id === teamId);
-                if (team) {
-                    const finalPoints = currentActiveCard.wager || points;
-                    team.score += finalPoints;
-                    confetti({particleCount: 150, spread: 70, origin: { y: 0.6 }});
-                }
-            }
-            renderBoard();
-            renderScoreboard();
-            saveGame();
-        }
-
-        function showFinalJeopardy() {
-            isFinalJeopardy = true;
-            document.getElementById('finalQuestion').innerText = "Uzbekistan's highest judicial body for constitutional review?";
-            document.getElementById('finalAnswer').innerText = "Constitutional Court";
-            const area = document.getElementById('finalTeams');
-            area.innerHTML = '';
-            teams.forEach(team => {
-                const div = document.createElement('div');
-                div.style.margin = '10px';
-                div.innerHTML = `<strong>${team.name}</strong> (${team.score})<br><input type="number" id="wager${team.id}" value="${Math.min(500, team.score)}" style="width:80px;">`;
-                area.appendChild(div);
-            });
-            document.getElementById('finalModal').style.display = 'flex';
-        }
-
-        function revealFinalAnswer() {
-            document.getElementById('finalAnswer').style.display = 'block';
-            document.getElementById('finalRevealBtn').style.display = 'none';
-        }
-
-        function finishGame() {
-            document.getElementById('finalModal').style.display = 'none';
-            confetti({particleCount: 300, spread: 100, origin: { y: 0.6 }});
-            alert("O'yin tugadi! G'olib: " + teams.sort((a,b)=>b.score-a.score)[0].name);
-        }
-
-        function toggleEditMode() {
-            isEditMode = !isEditMode;
-            const btn = document.getElementById('editToggleBtn');
-            btn.innerText = isEditMode ? "Edit Mode: ON" : "Edit Mode: OFF";
-            btn.className = isEditMode ? "btn btn-danger" : "btn btn-primary";
-            document.body.classList.toggle('edit-mode', isEditMode);
-            renderBoard();
-        }
-
-        function updateCategoryTitle(id, val) { const cat = gameData.find(c => c.id === id); if(cat) cat.title = val; saveGame(); }
-
-        function openEditModal(catId, questionObj) {
-            document.getElementById('editCategoryId').value = catId;
-            document.getElementById('editQuestionId').value = questionObj.id;
-            document.getElementById('editPoints').value = questionObj.points;
-            document.getElementById('editQuestionText').value = questionObj.q;
-            document.getElementById('editAnswerText').value = questionObj.a;
-            document.getElementById('editModal').style.display = 'flex';
-        }
-
-        function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
-
-        function saveQuestionChanges() {
-            const catId = document.getElementById('editCategoryId').value;
-            const qId = document.getElementById('editQuestionId').value;
-            const qText = document.getElementById('editQuestionText').value.trim();
-            const aText = document.getElementById('editAnswerText').value.trim();
-            if (!qText || !aText) { alert("Iltimos, barcha maydonlarni to‘ldiring"); return; }
-            const cat = gameData.find(c => c.id === catId);
-            if (cat) {
-                const q = cat.questions.find(qq => qq.id === qId);
-                if (q) { q.q = qText; q.a = aText; }
-            }
-            renderBoard();
-            closeEditModal();
-            saveGame();
+            updateEditModeClasses();
         }
 
         function renderScoreboard() {
             const sb = document.getElementById('scoreboard');
             sb.innerHTML = '';
-            teams.sort((a,b) => b.score - a.score).forEach(team => {
+            teams.forEach(team => {
                 const div = document.createElement('div');
                 div.className = 'team-score';
                 div.innerHTML = `
@@ -424,40 +540,175 @@
             });
         }
 
-        function updateTeamName(id, val) { const team = teams.find(t => t.id === id); if(team) team.name = val; saveGame(); }
+        // --- Game Logic ---
+        function handleCardClick(questionObj, catId) {
+            if (questionObj.solved) return;
 
-        function manualAdjustScore(id, amount) { const team = teams.find(t => t.id === id); if(team) { team.score += amount; renderScoreboard(); saveGame(); } }
+            currentActiveCard = { ...questionObj, catId };
+            
+            // Setup Modal
+            document.getElementById('playQuestion').innerText = questionObj.q;
+            document.getElementById('playAnswer').innerText = questionObj.a;
+            document.getElementById('playAnswer').style.display = 'none';
+            document.getElementById('playActions').style.display = 'none';
+            document.getElementById('showAnswerBtn').style.display = 'inline-block';
+            
+            // Setup Team Buttons
+            const actionsDiv = document.getElementById('playActions');
+            // Remove old buttons, keep the skip button
+            const skipBtn = actionsDiv.lastElementChild;
+            actionsDiv.innerHTML = '<p style="width: 100%; color: #666; margin-bottom: 10px;">Who answered correctly?</p>';
+            
+            teams.forEach(team => {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-primary';
+                btn.style.margin = '5px';
+                btn.innerText = `${team.name} (+${questionObj.points})`;
+                btn.onclick = () => closePlayModal(true, team.id);
+                actionsDiv.appendChild(btn);
+            });
+            actionsDiv.appendChild(skipBtn); 
 
-        function resetGameLogic() {
-            if (!confirm("Barcha ball va savollar tiklansinmi?")) return;
-            teams.forEach(t => t.score = 0);
-            gameData = JSON.parse(JSON.stringify(defaultData));
-            assignDailyDoubles();
-            renderScoreboard();
-            renderBoard();
-            saveGame();
+            document.getElementById('playModal').style.display = 'flex';
+            startTimer();
         }
 
-        // Keyboard
-        document.addEventListener('keydown', e => {
-            if (document.getElementById('playModal').style.display === 'flex') {
-                if (e.key === ' ') { e.preventDefault(); revealAnswer(); }
-                if (e.key >= '1' && e.key <= '5') {
-                    const idx = parseInt(e.key) - 1;
-                    if (teams[idx]) closePlayModal(true, teams[idx].id);
+        function startTimer() {
+            let timeLeft = 30;
+            const timerEl = document.getElementById('timer');
+            timerEl.innerText = timeLeft;
+            timerEl.style.color = "var(--gold)";
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.innerText = timeLeft;
+                if(timeLeft <= 5) timerEl.style.color = "var(--delete)";
+                if(timeLeft <= 0) clearInterval(timerInterval);
+            }, 1000);
+        }
+
+        function revealAnswer() {
+            document.getElementById('playAnswer').style.display = 'block';
+            document.getElementById('playActions').style.display = 'flex';
+            document.getElementById('showAnswerBtn').style.display = 'none';
+            clearInterval(timerInterval);
+        }
+
+        function closePlayModal(scored, teamId) {
+            document.getElementById('playModal').style.display = 'none';
+            clearInterval(timerInterval);
+
+            if (currentActiveCard) {
+                const cat = gameData.find(c => c.id === currentActiveCard.catId);
+                const q = cat.questions.find(q => q.id === currentActiveCard.id);
+                if (q) q.solved = true;
+
+                if (scored && teamId) {
+                    const team = teams.find(t => t.id === teamId);
+                    if (team) {
+                        team.score += currentActiveCard.points;
+                        renderScoreboard();
+                    }
                 }
             }
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+            renderBoard();
+        }
+
+        // --- Edit Mode Logic ---
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const btn = document.getElementById('editToggleBtn');
+            btn.innerText = isEditMode ? "Edit Mode: ON" : "Edit Mode: OFF";
+            btn.className = isEditMode ? "btn btn-danger" : "btn btn-primary";
+            
+            document.body.classList.toggle('edit-mode', isEditMode);
+            renderBoard();
+        }
+
+        function updateEditModeClasses() {
+            document.body.classList.toggle('edit-mode', isEditMode);
+        }
+
+        function updateCategoryTitle(id, val) {
+            const cat = gameData.find(c => c.id === id);
+            if(cat) cat.title = val;
+        }
+
+        // --- Edit Question Content Logic ---
+        function openEditModal(catId, questionObj) {
+            document.getElementById('editCategoryId').value = catId;
+            document.getElementById('editQuestionId').value = questionObj.id;
+            
+            // Points are fixed, so we just show them
+            document.getElementById('editPoints').value = questionObj.points;
+            
+            document.getElementById('editQuestionText').value = questionObj.q;
+            document.getElementById('editAnswerText').value = questionObj.a;
+            
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function saveQuestionChanges() {
+            const catId = document.getElementById('editCategoryId').value;
+            const qId = document.getElementById('editQuestionId').value;
+            const qText = document.getElementById('editQuestionText').value;
+            const aText = document.getElementById('editAnswerText').value;
+
+            if (!qText || !aText) {
+                alert("Please fill all fields");
+                return;
             }
-        });
+
+            const cat = gameData.find(c => c.id === catId);
+            if(cat) {
+                const q = cat.questions.find(q => q.id === qId);
+                if(q) {
+                    q.q = qText;
+                    q.a = aText;
+                }
+                renderBoard();
+                closeEditModal();
+            }
+        }
+
+        // --- Utils ---
+        function updateTeamName(id, val) {
+            const team = teams.find(t => t.id === id);
+            if(team) team.name = val;
+        }
+
+        function manualAdjustScore(id, amount) {
+            const team = teams.find(t => t.id === id);
+            if(team) {
+                team.score += amount;
+                renderScoreboard();
+            }
+        }
+
+        function resetGameLogic() {
+            if(!confirm("Reset all scores and restore questions?")) return;
+            
+            // Reset scores
+            teams.forEach(t => t.score = 0);
+            
+            // Unsolve all questions
+            gameData.forEach(c => {
+                c.questions.forEach(q => q.solved = false);
+            });
+            
+            renderScoreboard();
+            renderBoard();
+        }
 
         // Init
-        loadGame();
-        assignDailyDoubles();
         renderScoreboard();
         renderBoard();
-        saveGame();
+
     </script>
 </body>
 </html>
