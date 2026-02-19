@@ -1,713 +1,323 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uz">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Legal RMC GAME</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Ma'muriy Hududiy Birliklarni O'zgartirish</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --navy-blue: #002147;
-            --gold: #C5A059;
-            --white: #FFFFFF;
-            --light-gray: #E2E8F0;
-            --correct: #22c55e;
-            --delete: #ef4444;
-            --modal-bg: rgba(0, 33, 71, 0.98);
+        /* Maxsus effektlar */
+        .card-transition {
+            transition: all 0.5s ease-in-out;
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--light-gray);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding-bottom: 50px;
+        .answer-box {
+            animation: fadeIn 0.5s ease-in;
         }
-
-        /* --- Header & Controls --- */
-        header {
-            background-color: var(--navy-blue);
-            color: var(--white);
-            width: 100%;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            box-sizing: border-box;
-            z-index: 10;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        h1 {
-            margin: 0;
-            font-size: 1.8rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--gold);
+        @keyframes pulse-red {
+            0%, 100% { color: #ef4444; }
+            50% { color: #f87171; }
         }
-
-        .control-panel {
-            display: flex;
-            gap: 10px;
+        .timer-danger {
+            animation: pulse-red 1s infinite;
         }
-
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
-            font-size: 0.9rem;
-        }
-
-        .btn-primary { background-color: var(--gold); color: var(--navy-blue); }
-        .btn-primary:hover { background-color: #d4a017; }
-        
-        .btn-danger { background-color: var(--delete); color: white; }
-        .btn-danger:hover { background-color: #dc2626; }
-
-        .btn-outline { background-color: transparent; border: 1px solid var(--white); color: var(--white); }
-        .btn-outline:hover { background-color: rgba(255,255,255,0.1); }
-
-        /* --- Scoreboard --- */
-        .scoreboard {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 20px 0;
-            padding: 15px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 5;
-            flex-wrap: wrap;
-            max-width: 95%;
-        }
-
-        .team-score {
-            text-align: center;
-            background: #f8fafc;
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            position: relative;
-            min-width: 140px;
-        }
-
-        .team-score input[type="text"] {
-            border: none;
-            background: transparent;
-            border-bottom: 2px solid var(--navy-blue);
-            font-size: 1rem;
-            text-align: center;
-            width: 100%;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: var(--navy-blue);
-        }
-
-        .team-score .score-display {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--gold);
-            display: block;
-        }
-
-        .score-adjust {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-            margin-top: 5px;
-        }
-
-        .score-adjust button {
-            background: #e2e8f0;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            font-weight: bold;
-            color: var(--navy-blue);
-        }
-
-        /* --- Game Board --- */
-        .game-board {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr); /* Strict 5 columns */
-            gap: 15px;
-            width: 95%;
-            max-width: 1400px;
-            margin-bottom: 40px;
-        }
-
-        .column {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .category-header {
-            background-color: var(--navy-blue);
-            color: var(--white);
-            padding: 10px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 1rem;
-            border-radius: 6px;
-            border: 2px solid var(--gold);
-            height: 80px; /* Fixed height for consistency */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-transform: uppercase;
-            position: relative;
-            word-break: break-word;
-        }
-        
-        .category-header input {
-            background: transparent;
-            border: none;
-            color: white;
-            text-align: center;
-            font-weight: bold;
-            font-size: 1rem;
-            width: 100%;
-            font-family: inherit;
-        }
-        
-        /* Edit indicator for categories */
-        .category-header .edit-icon {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            font-size: 10px;
-            color: var(--gold);
-            display: none;
-        }
-
-        .card {
-            background-color: var(--white);
-            height: 90px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--navy-blue);
-            cursor: pointer;
-            border-radius: 6px;
-            box-shadow: 0 3px 5px rgba(0,0,0,0.1);
-            transition: all 0.2s;
-            border: 1px solid #ddd;
-            position: relative;
-            user-select: none;
-        }
-
-        .card:hover {
-            transform: translateY(-3px);
-            background-color: var(--navy-blue);
-            color: var(--gold);
-            border-color: var(--gold);
-        }
-
-        .card.disabled {
-            background-color: #cbd5e1;
-            color: #94a3b8;
-            cursor: default;
-            transform: none;
-            border-color: transparent;
-            box-shadow: none;
-        }
-        
-        /* Edit Mode Styling */
-        .edit-mode .card {
-            border: 2px dashed var(--gold);
-            background-color: #fffbeb; /* Slight yellow tint to indicate editable */
-        }
-        
-        .edit-mode .card:hover {
-            transform: none;
-            background-color: #fef3c7;
-            color: var(--navy-blue);
-            cursor: text;
-        }
-        
-        .edit-mode .category-header {
-            border: 2px dashed white;
-        }
-        
-        .edit-mode .category-header input {
-            background-color: rgba(255,255,255,0.1);
-            border-radius: 4px;
-        }
-
-        /* --- Modals --- */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--modal-bg);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            background-color: var(--white);
-            padding: 40px;
-            border-radius: 15px;
-            max-width: 900px;
-            width: 90%;
-            text-align: center;
-            position: relative;
-            border: 4px solid var(--gold);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-        }
-
-        /* Gameplay Modal */
-        .timer {
-            font-size: 4rem;
-            font-weight: 800;
-            color: var(--gold);
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 0px var(--navy-blue);
-        }
-
-        .question-text {
-            font-size: 2.2rem;
-            color: var(--navy-blue);
-            margin-bottom: 30px;
-            font-weight: 600;
-        }
-
-        .answer-text {
-            font-size: 1.8rem;
-            color: var(--correct);
-            font-weight: bold;
-            margin-top: 20px;
-            display: none;
-            padding: 20px;
-            background-color: #f0fdf4;
-            border-radius: 10px;
-            border: 2px solid var(--correct);
-        }
-
-        .action-buttons {
-            margin-top: 20px;
-            display: none;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-
-        /* Edit Modal */
-        .edit-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            text-align: left;
-        }
-        
-        .edit-form label { font-weight: bold; color: var(--navy-blue); }
-        .edit-form input, .edit-form textarea {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-family: inherit;
-        }
-
-        .read-only-field {
-            background-color: #f3f4f6;
-            color: #666;
-            cursor: not-allowed;
-        }
-
-        /* Helper Utilities */
-        .hidden { display: none !important; }
     </style>
 </head>
-<body>
+<body class="bg-slate-950 text-white font-sans min-h-screen flex flex-col p-4 overflow-hidden">
 
-    <header>
-        <h1><i class="fas fa-gavel"></i> Legal RMC game</h1>
-        <div class="control-panel">
-            <button class="btn btn-outline" onclick="resetGameLogic()">Reset Game</button>
-            <button class="btn btn-primary" id="editToggleBtn" onclick="toggleEditMode()">Edit Mode: OFF</button>
+    <!-- HEADER QISMI -->
+    <header class="bg-slate-900 p-4 rounded-2xl border border-slate-700 shadow-2xl mb-6 flex justify-between items-center">
+        
+        <!-- Sarlavha -->
+        <div class="flex items-center gap-4">
+            <div class="bg-blue-600 p-3 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-3xl font-black tracking-wider text-white uppercase">Ma'muriy hududiy birliklarni o'zgartirish</h1>
+                <p class="text-slate-400 text-sm">Kazusli topshiriqlar paneli</p>
+            </div>
+        </div>
+
+        <!-- Timer va Boshqaruv -->
+        <div class="flex items-center gap-6 bg-slate-800 p-3 rounded-xl border border-slate-700">
+            
+            <!-- Vaqtni o'zgartirish tugmalari -->
+            <div class="flex flex-col gap-1">
+                <button onclick="adjustTime(60)" class="bg-slate-700 hover:bg-slate-600 text-green-400 text-xs px-2 py-1 rounded font-bold transition">+ 1 daq</button>
+                <button onclick="adjustTime(-60)" class="bg-slate-700 hover:bg-slate-600 text-red-400 text-xs px-2 py-1 rounded font-bold transition">- 1 daq</button>
+            </div>
+
+            <!-- Asosiy Timer -->
+            <div id="timerDisplay" class="text-6xl font-black font-mono tracking-tighter text-blue-400 min-w-[180px] text-center">
+                03:00
+            </div>
+
+            <!-- Boshqaruv tugmalari -->
+            <div class="flex gap-2">
+                <button id="btnStart" onclick="toggleTimer()" class="p-4 rounded-full bg-green-600 hover:bg-green-500 text-white shadow-lg active:scale-95 transition">
+                    <svg id="iconPlay" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <svg id="iconPause" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </button>
+                
+                <button onclick="finishEarly()" class="p-4 rounded-full bg-red-600 hover:bg-red-500 text-white shadow-lg active:scale-95 transition" title="Muddatidan oldin tugatish">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                    </svg>
+                </button>
+
+                <button onclick="resetApp()" class="p-4 rounded-full bg-slate-600 hover:bg-slate-500 text-white shadow-lg active:scale-95 transition" title="Qayta yuklash">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </div>
         </div>
     </header>
 
-    <div class="scoreboard" id="scoreboard">
-        <!-- Teams generated by JS -->
-    </div>
+    <!-- ASOSIY GRID -->
+    <main id="cardsContainer" class="flex-1 grid grid-cols-2 gap-6 pb-4">
+        <!-- Kartalar JavaScript orqali yaratiladi -->
+    </main>
 
-    <div class="game-board" id="gameBoard">
-        <!-- Grid generated by JS -->
-    </div>
-
-    <!-- Gameplay Modal -->
-    <div class="modal-overlay" id="playModal">
-        <div class="modal-content">
-            <div class="timer" id="timer">10</div>
-            <div class="question-text" id="playQuestion">Question...</div>
-            
-            <button class="btn btn-primary" style="font-size: 1.2rem;" id="showAnswerBtn" onclick="revealAnswer()">Show Answer</button>
-            
-            <div class="answer-text" id="playAnswer">Answer...</div>
-            
-            <div class="action-buttons" id="playActions">
-                <p style="width: 100%; color: #666; margin-bottom: 10px;">Who answered correctly?</p>
-                <!-- Team buttons injected here -->
-                <div style="width: 100%; margin-top: 10px;">
-                    <button class="btn btn-danger" onclick="closePlayModal(false)">No one / Skip</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit Modal (Fixed Structure) -->
-    <div class="modal-overlay" id="editModal">
-        <div class="modal-content" style="max-width: 600px;">
-            <h2 style="color: var(--navy-blue); margin-top:0;">Edit Question Content</h2>
-            <div class="edit-form">
-                <input type="hidden" id="editCategoryId">
-                <input type="hidden" id="editQuestionId">
-                <div>
-                    <label>Points Value (Fixed)</label>
-                    <input type="number" id="editPoints" class="read-only-field" readonly>
-                </div>
-                <div>
-                    <label>Question</label>
-                    <textarea id="editQuestionText" rows="3" placeholder="Enter the question here..."></textarea>
-                </div>
-                <div>
-                    <label>Answer</label>
-                    <textarea id="editAnswerText" rows="3" placeholder="Enter the correct answer here..."></textarea>
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
-                    <button class="btn btn-outline" style="color: #666; border-color: #ccc;" onclick="closeEditModal()">Cancel</button>
-                    <button class="btn btn-primary" onclick="saveQuestionChanges()">Save Changes</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- JAVASCRIPT -->
     <script>
-        // --- 5x5 Fixed Data Structure ---
-        // Added 5th category and 500pt questions to match requirements
-        const defaultData = [
+        // --- MA'LUMOTLAR ---
+        const scenarios = [
             {
-                id: 'cat1',
-                title: 'Global Systems',
-                questions: [
-                    { id: 'q1-1', points: 100, q: "In this country, lawyers are divided into Barristers and Solicitors.", a: "United Kingdom", solved: false },
-                    { id: 'q1-2', points: 200, q: "The unified term for all lawyers in the USA.", a: "Attorney (Attorney at Law)", solved: false },
-                    { id: 'q1-3', points: 300, q: "Who is known as the 'Preventive Judge' in Civil Law systems?", a: "Notary", solved: false },
-                    { id: 'q1-4', points: 400, q: "In an Adversarial system, what is the main role of the Judge?", a: "Neutral Referee / Umpire", solved: false },
-                    { id: 'q1-5', points: 500, q: "The legal principle where a person cannot be tried twice for the same crime.", a: "Double Jeopardy", solved: false }
-                ]
+                id: 1,
+                name: "1-JAMOA",
+                color: "bg-indigo-600",
+                question: "Samarqand viloyati Paxtachi tumanidagi 'Qarnab' qishlog'ini Navoiy viloyati Xatirchi tumani tarkibiga o'tkazish tashabbusi bilan kim chiqadi va yakuniy qarorni kim qabul qiladi?",
+                answer: "Tashabbus xalq deputatlari viloyat Kengashlari tomonidan ko'tariladi. Yakuniy qarorni O'zbekiston Respublikasi Oliy Majlisi Senati qabul qiladi.",
+                law: "Konstitutsiya 81-modda; 'Ma'muriy-hududiy tuzilish to'g'risida'gi qonun."
             },
             {
-                id: 'cat2',
-                title: 'Uzbekistan',
-                questions: [
-                    { id: 'q2-1', points: 100, q: "Which chapter of the Constitution is dedicated to Advocacy?", a: "Chapter XXIV", solved: false },
-                    { id: 'q2-2', points: 200, q: "Can an advocate be a state civil servant?", a: "No (except for scientific/teaching roles)", solved: false },
-                    { id: 'q2-3', points: 300, q: "Who are known as the 'Legal Shield' of organizations?", a: "Legal Advisors (Jurisconsults)", solved: false },
-                    { id: 'q2-4', points: 400, q: "The national online database of legislation in Uzbekistan.", a: "Lex.uz", solved: false },
-                    { id: 'q2-5', points: 500, q: "The highest judicial body for constitutional review in Uzbekistan.", a: "Constitutional Court", solved: false }
-                ]
+                id: 2,
+                name: "2-JAMOA",
+                color: "bg-blue-600",
+                question: "Toshkent shahri tarkibida yangi 'Yangi O'zbekiston' tumanini tuzish uchun aholining roziligi shartmi? Agar shart bo'lsa, u qanday shaklda olinadi?",
+                answer: "Ha, shart. Tegishli hududda yashovchi fuqarolarning fikri hisobga olinadi, lekin bu referendum orqali emas, balki Kengashlar muhokamasi orqali amalga oshiriladi.",
+                law: "'Ma'muriy-hududiy tuzilish to'g'risida'gi qonun, 6-modda."
             },
             {
-                id: 'cat3',
-                title: 'Legal Professions',
-                questions: [
-                    { id: 'q3-1', points: 100, q: "Official who supports the state accusation in court.", a: "Prosecutor", solved: false },
-                    { id: 'q3-2', points: 200, q: "Professional responsible for finding facts and evidence in criminal cases.", a: "Investigator", solved: false },
-                    { id: 'q3-3', points: 300, q: "According to the presentation, what are the lawyer's two main tools?", a: "The Word (Oratory) and Logic", solved: false },
-                    { id: 'q3-4', points: 400, q: "Student practice program providing free legal aid to the community.", a: "Street Law (Legal Clinic)", solved: false },
-                    { id: 'q3-5', points: 500, q: "Latin term meaning 'for the public good', referring to free legal work.", a: "Pro Bono", solved: false }
-                ]
+                id: 3,
+                name: "3-JAMOA",
+                color: "bg-orange-600",
+                question: "Farg'ona viloyati hokimi o'z qarori bilan Quvasoy shahrini Farg'ona tumani tarkibiga qo'shib yubordi. Ushbu qaror qonuniymi? Tumanlarni tugatish tartibi qanday?",
+                answer: "Noqonuniy. Viloyat hokimi tuman/shaharlarni tugatish vakolatiga ega emas. Buni faqat Oliy Majlis Senati Vazirlar Mahkamasi taklifiga binoan amalga oshiradi.",
+                law: "Konstitutsiya, Mahalliy davlat hokimiyati to'g'risidagi qonun."
             },
             {
-                id: 'cat4',
-                title: 'Future & Tech',
-                questions: [
-                    { id: 'q4-1', points: 100, q: "Digital portal for Ministry of Justice services.", a: "my.gov.uz / adliya.uz", solved: false },
-                    { id: 'q4-2', points: 200, q: "Alternative dispute resolution for global business (non-court).", a: "International Commercial Arbitration", solved: false },
-                    { id: 'q4-3', points: 300, q: "An essential skill for 21st-century lawyers besides legal knowledge.", a: "Technology / Soft Skills / Ethics", solved: false },
-                    { id: 'q4-4', points: 400, q: "A niche field of law mentioned (e.g., related to oceans or animals).", a: "Maritime Law or Animal Rights Law", solved: false },
-                    { id: 'q4-5', points: 500, q: "A self-executing contract with the terms directly written into code.", a: "Smart Contract", solved: false }
-                ]
-            },
-            {
-                id: 'cat5',
-                title: 'Legal Terms',
-                questions: [
-                    { id: 'q5-1', points: 100, q: "The person or party who initiates a lawsuit.", a: "Plaintiff", solved: false },
-                    { id: 'q5-2', points: 200, q: "A formal written statement used as evidence in court.", a: "Affidavit", solved: false },
-                    { id: 'q5-3', points: 300, q: "Latin term for 'bad faith'.", a: "Mala Fide", solved: false },
-                    { id: 'q5-4', points: 400, q: "The conditional release of a prisoner before the full sentence is served.", a: "Parole", solved: false },
-                    { id: 'q5-5', points: 500, q: "A court order requiring a person to do or cease doing a specific action.", a: "Injunction", solved: false }
-                ]
+                id: 5,
+                name: "5-JAMOA",
+                color: "bg-purple-600",
+                question: "Xorazm viloyatidagi 'Urganch' tumani nomini 'Jaloliddin Manguberdi' tumani deb o'zgartirish haqida qaror qabul qilish uchun qaysi organlar ruxsati kerak?",
+                answer: "Toponimik obyektlarga nom berish komissiyasi xulosasi, Viloyat Kengashi qarori va Oliy Majlis Senatining qarori talab etiladi.",
+                law: "'Geografik obyektlarning nomlari to'g'risida'gi qonun."
             }
         ];
 
-        let gameData = JSON.parse(JSON.stringify(defaultData));
-        
-        // Fixed 5 Teams
-        let teams = [
-            { id: 1, name: "Team 1", score: 0 },
-            { id: 2, name: "Team 2", score: 0 },
-            { id: 3, name: "Team 3", score: 0 },
-            { id: 4, name: "Team 4", score: 0 },
-            { id: 5, name: "Team 5", score: 0 }
-        ];
+        // --- HOLAT (STATE) ---
+        let timeLeft = 180;
+        let isActive = false;
+        let isFinished = false;
+        let timerInterval = null;
 
-        let isEditMode = false;
-        let currentActiveCard = null;
-        let timerInterval;
-
-        // --- Core Rendering ---
-        function renderBoard() {
-            const board = document.getElementById('gameBoard');
-            board.innerHTML = '';
-
-            gameData.forEach((category) => {
-                const col = document.createElement('div');
-                col.className = 'column';
-                
-                // Category Header (Editable Title only)
-                col.innerHTML = `
-                    <div class="category-header">
-                        ${isEditMode 
-                            ? `<input type="text" value="${category.title}" onchange="updateCategoryTitle('${category.id}', this.value)">` 
-                            : category.title}
-                    </div>
-                `;
-
-                category.questions.forEach(q => {
-                    const card = document.createElement('div');
-                    card.className = `card ${q.solved ? 'disabled' : ''}`;
-                    // In edit mode, click opens edit modal. In play mode, opens play modal.
-                    card.onclick = () => {
-                        if (isEditMode) openEditModal(category.id, q);
-                        else handleCardClick(q, category.id);
-                    };
-                    
-                    if(q.solved && !isEditMode) {
-                        card.innerHTML = `<i class="fas fa-check"></i>`;
-                    } else {
-                        card.innerText = q.points;
-                    }
-                    col.appendChild(card);
-                });
-
-                board.appendChild(col);
-            });
-
-            updateEditModeClasses();
+        // --- DASTURNI BOSHLASH ---
+        function init() {
+            renderCards();
+            updateTimerDisplay();
         }
 
-        function renderScoreboard() {
-            const sb = document.getElementById('scoreboard');
-            sb.innerHTML = '';
-            teams.forEach(team => {
-                const div = document.createElement('div');
-                div.className = 'team-score';
-                div.innerHTML = `
-                    <input type="text" value="${team.name}" onchange="updateTeamName(${team.id}, this.value)">
-                    <span class="score-display" id="score-${team.id}">${team.score}</span>
-                    <div class="score-adjust">
-                        <button onclick="manualAdjustScore(${team.id}, 100)">+</button>
-                        <button onclick="manualAdjustScore(${team.id}, -100)">-</button>
-                    </div>
-                `;
-                sb.appendChild(div);
-            });
-        }
-
-        // --- Game Logic ---
-        function handleCardClick(questionObj, catId) {
-            if (questionObj.solved) return;
-
-            currentActiveCard = { ...questionObj, catId };
-            
-            // Setup Modal
-            document.getElementById('playQuestion').innerText = questionObj.q;
-            document.getElementById('playAnswer').innerText = questionObj.a;
-            document.getElementById('playAnswer').style.display = 'none';
-            document.getElementById('playActions').style.display = 'none';
-            document.getElementById('showAnswerBtn').style.display = 'inline-block';
-            
-            // Setup Team Buttons
-            const actionsDiv = document.getElementById('playActions');
-            // Remove old buttons, keep the skip button
-            const skipBtn = actionsDiv.lastElementChild;
-            actionsDiv.innerHTML = '<p style="width: 100%; color: #666; margin-bottom: 10px;">Who answered correctly?</p>';
-            
-            teams.forEach(team => {
-                const btn = document.createElement('button');
-                btn.className = 'btn btn-primary';
-                btn.style.margin = '5px';
-                btn.innerText = `${team.name} (+${questionObj.points})`;
-                btn.onclick = () => closePlayModal(true, team.id);
-                actionsDiv.appendChild(btn);
-            });
-            actionsDiv.appendChild(skipBtn); 
-
-            document.getElementById('playModal').style.display = 'flex';
-            startTimer();
+        // --- TIMER LOGIKASI ---
+        function toggleTimer() {
+            if (isActive) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
         }
 
         function startTimer() {
-            let timeLeft = 10;
-            const timerEl = document.getElementById('timer');
-            timerEl.innerText = timeLeft;
-            timerEl.style.color = "var(--gold)";
+            if (timeLeft <= 0) return;
+            isActive = true;
+            document.getElementById('iconPlay').classList.add('hidden');
+            document.getElementById('iconPause').classList.remove('hidden');
             
-            clearInterval(timerInterval);
             timerInterval = setInterval(() => {
-                timeLeft--;
-                timerEl.innerText = timeLeft;
-                if(timeLeft <= 5) timerEl.style.color = "var(--delete)";
-                if(timeLeft <= 0) clearInterval(timerInterval);
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    finishTimer();
+                }
             }, 1000);
         }
 
-        function revealAnswer() {
-            document.getElementById('playAnswer').style.display = 'block';
-            document.getElementById('playActions').style.display = 'flex';
-            document.getElementById('showAnswerBtn').style.display = 'none';
+        function pauseTimer() {
+            isActive = false;
             clearInterval(timerInterval);
+            document.getElementById('iconPlay').classList.remove('hidden');
+            document.getElementById('iconPause').classList.add('hidden');
         }
 
-        function closePlayModal(scored, teamId) {
-            document.getElementById('playModal').style.display = 'none';
-            clearInterval(timerInterval);
-
-            if (currentActiveCard) {
-                const cat = gameData.find(c => c.id === currentActiveCard.catId);
-                const q = cat.questions.find(q => q.id === currentActiveCard.id);
-                if (q) q.solved = true;
-
-                if (scored && teamId) {
-                    const team = teams.find(t => t.id === teamId);
-                    if (team) {
-                        team.score += currentActiveCard.points;
-                        renderScoreboard();
-                    }
-                }
-            }
-            renderBoard();
+        function finishTimer() {
+            pauseTimer();
+            timeLeft = 0;
+            isFinished = true;
+            updateTimerDisplay();
+            updateCardsToFinishedState();
         }
 
-        // --- Edit Mode Logic ---
-        function toggleEditMode() {
-            isEditMode = !isEditMode;
-            const btn = document.getElementById('editToggleBtn');
-            btn.innerText = isEditMode ? "Edit Mode: ON" : "Edit Mode: OFF";
-            btn.className = isEditMode ? "btn btn-danger" : "btn btn-primary";
-            
-            document.body.classList.toggle('edit-mode', isEditMode);
-            renderBoard();
+        function finishEarly() {
+            if (isFinished) return;
+            finishTimer();
         }
 
-        function updateEditModeClasses() {
-            document.body.classList.toggle('edit-mode', isEditMode);
-        }
-
-        function updateCategoryTitle(id, val) {
-            const cat = gameData.find(c => c.id === id);
-            if(cat) cat.title = val;
-        }
-
-        // --- Edit Question Content Logic ---
-        function openEditModal(catId, questionObj) {
-            document.getElementById('editCategoryId').value = catId;
-            document.getElementById('editQuestionId').value = questionObj.id;
-            
-            // Points are fixed, so we just show them
-            document.getElementById('editPoints').value = questionObj.points;
-            
-            document.getElementById('editQuestionText').value = questionObj.q;
-            document.getElementById('editAnswerText').value = questionObj.a;
-            
-            document.getElementById('editModal').style.display = 'flex';
-        }
-
-        function closeEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-        }
-
-        function saveQuestionChanges() {
-            const catId = document.getElementById('editCategoryId').value;
-            const qId = document.getElementById('editQuestionId').value;
-            const qText = document.getElementById('editQuestionText').value;
-            const aText = document.getElementById('editAnswerText').value;
-
-            if (!qText || !aText) {
-                alert("Please fill all fields");
-                return;
-            }
-
-            const cat = gameData.find(c => c.id === catId);
-            if(cat) {
-                const q = cat.questions.find(q => q.id === qId);
-                if(q) {
-                    q.q = qText;
-                    q.a = aText;
-                }
-                renderBoard();
-                closeEditModal();
+        function adjustTime(seconds) {
+            if (isActive) return; // Vaqt ketayotganda o'zgartirib bo'lmaydi
+            timeLeft += seconds;
+            if (timeLeft < 0) timeLeft = 0;
+            isFinished = false;
+            updateTimerDisplay();
+            // Kartalarni qayta boshlang'ich holatga keltirish agar vaqt qo'shilsa
+            if (timeLeft > 0) {
+                renderCards(); // Reset UI visually to "Tahlil qilinmoqda"
             }
         }
 
-        // --- Utils ---
-        function updateTeamName(id, val) {
-            const team = teams.find(t => t.id === id);
-            if(team) team.name = val;
+        function resetApp() {
+            pauseTimer();
+            timeLeft = 180;
+            isFinished = false;
+            updateTimerDisplay();
+            renderCards();
         }
 
-        function manualAdjustScore(id, amount) {
-            const team = teams.find(t => t.id === id);
-            if(team) {
-                team.score += amount;
-                renderScoreboard();
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            const display = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            const timerEl = document.getElementById('timerDisplay');
+            
+            timerEl.textContent = display;
+
+            if (timeLeft === 0) {
+                timerEl.classList.remove('text-blue-400');
+                timerEl.classList.add('text-red-600', 'timer-danger');
+                timerEl.textContent = "00:00";
+            } else if (timeLeft < 30) {
+                timerEl.classList.remove('text-blue-400');
+                timerEl.classList.add('text-red-500', 'timer-danger');
+            } else {
+                timerEl.classList.remove('text-red-500', 'text-red-600', 'timer-danger');
+                timerEl.classList.add('text-blue-400');
             }
         }
 
-        function resetGameLogic() {
-            if(!confirm("Reset all scores and restore questions?")) return;
-            
-            // Reset scores
-            teams.forEach(t => t.score = 0);
-            
-            // Unsolve all questions
-            gameData.forEach(c => {
-                c.questions.forEach(q => q.solved = false);
+        // --- KARTALARNI CHIZISH ---
+        function renderCards() {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+
+            scenarios.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "flex flex-col h-full bg-slate-800 border-2 border-slate-600 rounded-xl overflow-hidden card-transition";
+                card.id = `card-${item.id}`;
+
+                card.innerHTML = `
+                    <div class="p-4 text-center font-black text-2xl uppercase tracking-widest text-white ${item.color}">
+                        ${item.name}
+                    </div>
+                    <div class="flex-1 p-6 flex flex-col justify-center relative">
+                        <!-- SAVOL -->
+                        <div id="question-${item.id}" class="space-y-4">
+                            <h3 class="text-xl text-yellow-400 font-bold border-b border-slate-600 pb-2 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                KAZUS №${item.id}
+                            </h3>
+                            <p class="text-xl leading-relaxed text-white font-medium">
+                                ${item.question}
+                            </p>
+                        </div>
+
+                        <!-- JAVOB (Boshida yashirin) -->
+                        <div id="answer-${item.id}" class="hidden space-y-4 answer-box">
+                            <h3 class="text-xl text-green-400 font-bold border-b border-green-900 pb-2 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                TO'G'RI JAVOB:
+                            </h3>
+                            <p class="text-lg leading-relaxed text-slate-200">
+                                ${item.answer}
+                            </p>
+                            <div class="mt-2 text-sm text-slate-400 font-mono bg-slate-900 p-2 rounded border border-slate-700">
+                                <strong>ASOS:</strong> ${item.law}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PASTKI QISM (Footer) -->
+                    <div id="footer-${item.id}" class="bg-slate-900 p-3 flex justify-between items-center border-t border-slate-700 min-h-[70px]">
+                        <span class="text-slate-400 text-sm font-bold">HOLAT:</span>
+                        <span class="text-yellow-500 font-bold animate-pulse flex items-center gap-2">
+                            <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            TAHLIL QILINMOQDA...
+                        </span>
+                    </div>
+                `;
+                container.appendChild(card);
             });
-            
-            renderScoreboard();
-            renderBoard();
         }
 
-        // Init
-        renderScoreboard();
-        renderBoard();
+        // --- VAQT TUGAGANDAGI O'ZGARISH ---
+        function updateCardsToFinishedState() {
+            scenarios.forEach(item => {
+                const footer = document.getElementById(`footer-${item.id}`);
+                footer.innerHTML = `
+                    <span class="text-red-500 text-sm font-bold animate-pulse">VAQT TUGADI</span>
+                    <button onclick="revealAnswer(${item.id})" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-6 rounded-full shadow-lg transform transition active:scale-95 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        JAVOBNI KO'RISH
+                    </button>
+                `;
+            });
+        }
+
+        // --- JAVOBNI OCHISH ---
+        function revealAnswer(id) {
+            const questionEl = document.getElementById(`question-${id}`);
+            const answerEl = document.getElementById(`answer-${id}`);
+            const cardEl = document.getElementById(`card-${id}`);
+            const footerEl = document.getElementById(`footer-${id}`);
+
+            // Animatsiya bilan almashtirish
+            questionEl.classList.add('hidden');
+            answerEl.classList.remove('hidden');
+            
+            // Karta uslubini o'zgartirish (yashil chegara)
+            cardEl.classList.remove('border-slate-600');
+            cardEl.classList.add('border-green-500');
+
+            // Tugmani o'zgartirish (ixtiyoriy, agar kerak bo'lsa)
+            footerEl.querySelector('button').classList.add('bg-slate-700', 'text-slate-300');
+            footerEl.querySelector('button').innerHTML = `
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                 OCHILDI
+            `;
+        }
+
+        // Ilovani ishga tushirish
+        init();
 
     </script>
 </body>
