@@ -3,181 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>O'zbekiston Puzzle - Pro Version</title>
+    <title>O'zbekiston Puzzle - Smartboard Version</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap');
         
         body {
             font-family: 'Montserrat', sans-serif;
-            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+            background-color: #ffffff;
+            overflow: hidden; /* Scroll bo'lmasligi uchun */
         }
 
-        /* 3D Button Effect */
+        /* 3D Button Effect - Kattalashtirilgan */
         .team-btn {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             top: 0;
+            border-bottom-width: 8px; /* Qalinroq 3D effekt */
         }
 
         .team-btn:active {
-            top: 4px;
-            box-shadow: 0 0px 0 0 #e5e7eb;
+            top: 8px;
+            border-bottom-width: 0px;
+            transform: translateY(2px);
         }
 
         /* Active State Animation */
         .team-btn.active {
-            background: linear-gradient(to bottom right, #22c55e, #16a34a);
+            background: #16a34a; /* Green-600 */
             color: white;
-            transform: scale(1.1);
-            box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.4), 0 4px 6px -2px rgba(34, 197, 94, 0.2);
-            border-color: #15803d;
-            animation: pulse-green 2s infinite;
+            border-color: #14532d; /* Green-900 */
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.6);
         }
 
-        @keyframes pulse-green {
-            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        /* Check Button Animation */
+        .check-btn {
+            transition: transform 0.2s;
+        }
+        .check-btn:active {
+            transform: scale(0.9);
         }
 
-        /* Reveal Animation */
-        .reveal-anim {
-            animation: slideUpFade 0.6s ease-out forwards;
-        }
-
-        @keyframes slideUpFade {
-            from {
-                opacity: 0;
-                transform: translateY(20px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-        
-        /* Map Image Containment */
+        /* Map Image Styles */
         .map-image-contain {
             object-fit: contain;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15));
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+
+        /* Grid Background for aesthetic (subtle) */
+        .bg-grid {
+            background-image: radial-gradient(#e5e7eb 2px, transparent 2px);
+            background-size: 40px 40px;
         }
     </style>
 </head>
-<body class="h-screen flex items-center justify-center overflow-hidden bg-blue-50">
+<body class="h-screen w-screen flex flex-col bg-white bg-grid">
 
-    <!-- OYIN OYNASI -->
-    <div id="game-screen" class="w-full max-w-lg h-full md:h-auto md:max-h-[95vh] glass-panel rounded-3xl shadow-2xl flex flex-col items-center p-6 relative border-t-4 border-blue-500 overflow-y-auto">
+    <!-- HEADER QISMI (Yuqori panel) -->
+    <header class="w-full h-[10vh] flex justify-between items-center px-12 border-b-4 border-gray-100 bg-white z-10">
+        <div>
+            <h1 class="text-4xl font-black text-blue-900 tracking-widest uppercase">PUZZLE MAP</h1>
+            <p class="text-xl text-gray-400 font-bold mt-1">O'zbekiston bo'ylab sayohat</p>
+        </div>
         
-        <!-- Header -->
-        <div class="w-full flex justify-between items-center mb-4 border-b pb-4 border-gray-100">
-            <div>
-                <h1 class="text-xl font-extrabold text-blue-900 uppercase tracking-widest">Puzzle Map</h1>
-                <p class="text-gray-400 text-xs font-semibold tracking-wide">O'zbekiston bo'ylab sayohat</p>
-            </div>
-            <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-bold text-sm shadow-inner">
-                Savol: <span id="question-counter" class="text-lg">1</span><span class="text-blue-400">/14</span>
+        <!-- Katta Savol Hisoblagich -->
+        <div class="flex items-center gap-4 bg-blue-50 px-8 py-4 rounded-2xl border-2 border-blue-100">
+            <span class="text-3xl text-blue-800 font-bold uppercase">Savol:</span>
+            <div class="flex items-end baseline">
+                <span id="question-counter" class="text-6xl font-black text-blue-600 leading-none">1</span>
+                <span class="text-4xl text-gray-400 font-bold">/14</span>
             </div>
         </div>
+    </header>
 
-        <!-- Savol Matni -->
-        <div class="text-center mb-4">
-            <h2 class="text-xl font-bold text-gray-800" id="question-text">Bu qaysi hudud?</h2>
-            <p class="text-xs text-gray-500 mt-1">Xaritadagi shaklga qarab toping!</p>
-        </div>
+    <!-- ASOSIY QISM (O'rta) -->
+    <main id="game-screen" class="flex-1 w-full flex flex-col items-center justify-between p-8 relative">
+        
+        <!-- Savol Matni (Juda katta) -->
+        <h2 class="text-5xl md:text-6xl font-extrabold text-gray-800 text-center mb-4 mt-4 drop-shadow-sm">
+            Bu qaysi hudud?
+        </h2>
 
-        <!-- 1. RASM QISMI (Hozir doim ko'rinadi) -->
-        <div id="image-container" class="w-full h-56 bg-white rounded-2xl flex items-center justify-center mb-6 relative overflow-hidden border border-gray-200 shadow-inner p-4">
-            
-            <!-- Asl Rasm (Endi doim ko'rinadi) -->
+        <!-- Xarita Rasmi (Ekran markazini egallaydi) -->
+        <div class="flex-1 w-full flex items-center justify-center relative my-4">
+            <!-- Rasm -->
             <img 
                 id="region-image" 
                 src="" 
                 alt="Hudud Rasmi" 
-                class="w-full h-full map-image-contain transition-all duration-500 transform hover:scale-105"
+                class="h-full w-auto max-h-[50vh] map-image-contain transition-transform duration-700"
             >
             
-            <!-- Hudud Nomi (Boshida yashirin, Javob bosilganda chiqadi) -->
-            <div id="region-name-overlay" class="absolute inset-0 bg-blue-900 bg-opacity-90 flex items-center justify-center hidden backdrop-blur-sm transition-all duration-300">
-                <h2 id="region-name-display" class="text-2xl font-bold text-white tracking-wider text-center px-4">Hudud Nomi</h2>
+            <!-- Javob Overlay (Nom chiqishi) -->
+            <div id="region-name-overlay" class="absolute bottom-10 bg-white/90 backdrop-blur-md px-12 py-6 rounded-3xl border-4 border-blue-500 shadow-2xl hidden animate-slide-in transform translate-y-10">
+                <h2 id="region-name-display" class="text-6xl font-black text-blue-900 tracking-wide text-center uppercase">Hudud Nomi</h2>
             </div>
         </div>
 
-        <!-- 2. JAMOA TANLASH (Random & Fair) -->
-        <div class="w-full mb-6">
-            <p class="text-center text-xs font-bold text-gray-400 mb-2 uppercase">Javob beruvchi jamoa:</p>
-            <div class="flex justify-center gap-4 md:gap-6">
-                <button onclick="manualSelect(1)" id="btn-1" class="team-btn w-14 h-14 rounded-xl border-b-4 border-gray-300 bg-white text-xl font-black text-gray-600 flex items-center justify-center shadow-md hover:bg-gray-50">1</button>
-                <button onclick="manualSelect(2)" id="btn-2" class="team-btn w-14 h-14 rounded-xl border-b-4 border-gray-300 bg-white text-xl font-black text-gray-600 flex items-center justify-center shadow-md hover:bg-gray-50">2</button>
-                <button onclick="manualSelect(3)" id="btn-3" class="team-btn w-14 h-14 rounded-xl border-b-4 border-gray-300 bg-white text-xl font-black text-gray-600 flex items-center justify-center shadow-md hover:bg-gray-50">3</button>
-                <button onclick="manualSelect(4)" id="btn-4" class="team-btn w-14 h-14 rounded-xl border-b-4 border-gray-300 bg-white text-xl font-black text-gray-600 flex items-center justify-center shadow-md hover:bg-gray-50">4</button>
-            </div>
-        </div>
-
-        <!-- Javobni Ko'rsatish Tugmasi -->
-        <button onclick="showAnswer()" id="show-answer-btn" class="mb-6 px-8 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 transition flex items-center gap-2 transform active:scale-95 w-full justify-center">
-            <i class="fas fa-eye"></i> Javobni Tekshirish
-        </button>
-
-        <!-- 3. TO'G'RI (Check) TUGMASI -->
-        <div class="w-full flex justify-between items-center mt-auto pt-4 border-t border-gray-100">
-            <button onclick="skipQuestion()" class="text-gray-400 hover:text-red-500 font-semibold text-sm transition px-4 flex items-center gap-1">
-                <i class="fas fa-forward"></i> O'tkazish
-            </button>
+        <!-- PASTKI BOSHQARUV PANELI (Footer Controls) -->
+        <div class="w-full h-[25vh] flex flex-col gap-6 justify-end pb-4">
             
-            <button onclick="submitAnswer()" class="check-btn bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white w-20 h-20 rounded-full shadow-xl shadow-green-200 flex items-center justify-center text-4xl border-4 border-white ring-4 ring-green-50 transition transform hover:rotate-12 hover:scale-110">
-                <i class="fas fa-check"></i>
-            </button>
+            <!-- 1. JAMOA TANLASH (Katta Tugmalar) -->
+            <div class="flex justify-center gap-8 w-full px-12">
+                <button onclick="manualSelect(1)" id="btn-1" class="team-btn flex-1 h-32 bg-gray-100 border-gray-300 rounded-3xl text-6xl font-black text-gray-600 shadow-lg hover:bg-white flex items-center justify-center">1</button>
+                <button onclick="manualSelect(2)" id="btn-2" class="team-btn flex-1 h-32 bg-gray-100 border-gray-300 rounded-3xl text-6xl font-black text-gray-600 shadow-lg hover:bg-white flex items-center justify-center">2</button>
+                <button onclick="manualSelect(3)" id="btn-3" class="team-btn flex-1 h-32 bg-gray-100 border-gray-300 rounded-3xl text-6xl font-black text-gray-600 shadow-lg hover:bg-white flex items-center justify-center">3</button>
+                <button onclick="manualSelect(4)" id="btn-4" class="team-btn flex-1 h-32 bg-gray-100 border-gray-300 rounded-3xl text-6xl font-black text-gray-600 shadow-lg hover:bg-white flex items-center justify-center">4</button>
+            </div>
 
-            <div class="w-20 text-right">
-                 <!-- Bo'sh joy -->
+            <!-- 2. HARAKAT TUGMALARI (Pastki qator) -->
+            <div class="flex justify-between items-center px-12 mt-2">
+                
+                <!-- Javobni Ko'rsatish -->
+                <button onclick="showAnswer()" id="show-answer-btn" class="flex-1 max-w-md h-24 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-3xl font-bold shadow-xl transition transform active:scale-95 flex items-center justify-center gap-4">
+                    <i class="fas fa-eye"></i> JAVOBNI KO'RSATISH
+                </button>
+
+                <!-- Check (Tasdiqlash) - O'rtada emas, o'ng tomonda yirik -->
+                <div class="flex gap-6">
+                    <button onclick="skipQuestion()" class="h-24 px-8 text-gray-400 hover:text-red-500 font-bold text-2xl transition flex items-center gap-2 rounded-2xl hover:bg-gray-50">
+                        O'tkazish <i class="fas fa-forward"></i>
+                    </button>
+
+                    <button onclick="submitAnswer()" class="check-btn h-24 w-24 bg-green-500 text-white rounded-full shadow-xl flex items-center justify-center text-5xl border-4 border-green-200 ring-4 ring-green-100">
+                        <i class="fas fa-check"></i>
+                    </button>
+                </div>
             </div>
         </div>
+    </main>
 
-    </div>
-
-    <!-- NATIJALAR OYNASI -->
-    <div id="result-screen" class="hidden fixed inset-0 bg-white z-50 flex flex-col items-center justify-center p-4 overflow-y-auto">
-        <div class="w-full max-w-4xl flex flex-col items-center py-8">
-            <div class="text-center mb-6 animate-bounce">
-                <i class="fas fa-trophy text-yellow-400 text-6xl drop-shadow-lg"></i>
-            </div>
-            <h2 class="text-4xl font-extrabold text-blue-900 mb-2">O'yin Yakunlandi!</h2>
-            <p class="text-gray-500 mb-8">Barcha hududlar o'rganildi</p>
+    <!-- NATIJALAR OYNASI (Fullscreen) -->
+    <div id="result-screen" class="hidden fixed inset-0 bg-white z-50 flex flex-col items-center justify-center p-12">
+        <div class="w-full max-w-7xl flex flex-col items-center h-full justify-between py-10">
             
-            <!-- O'zbekiston Umumiy Xaritasi (KATTALASHTIRILDI) -->
-            <div class="w-full h-96 mb-10 rounded-3xl shadow-2xl border-4 border-white overflow-hidden bg-blue-50 flex items-center justify-center p-4">
-                <img src="https://gadm.org/img/480/gadm/UZB/UZB_labs.png" class="w-full h-full object-contain hover:scale-110 transition-transform duration-700" alt="O'zbekiston Xaritasi">
+            <div class="text-center">
+                <i class="fas fa-trophy text-yellow-400 text-9xl drop-shadow-xl mb-6 animate-bounce"></i>
+                <h2 class="text-7xl font-black text-blue-900 mb-4">O'YIN YAKUNLANDI!</h2>
+                <p class="text-3xl text-gray-500">Barcha 14 ta hudud muvaffaqiyatli o'rganildi.</p>
+            </div>
+            
+            <!-- Xarita (Juda katta) -->
+            <div class="flex-1 w-full flex items-center justify-center p-8">
+                <img src="https://gadm.org/img/480/gadm/UZB/UZB_labs.png" class="h-full w-auto max-h-[50vh] object-contain drop-shadow-2xl" alt="O'zbekiston Xaritasi">
             </div>
 
-            <!-- Yakuniy Ballar -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mb-8">
-                <div class="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-blue-500 flex flex-col items-center justify-center">
-                    <span class="font-bold text-gray-500 mb-2">1-Jamoa</span>
-                    <span class="text-4xl font-black text-blue-600" id="score-1">0</span>
+            <!-- Natijalar Jadvali (Grid) -->
+            <div class="grid grid-cols-4 gap-8 w-full">
+                <!-- 1-Jamoa -->
+                <div class="bg-blue-50 p-8 rounded-3xl border-t-8 border-blue-600 flex flex-col items-center shadow-lg">
+                    <span class="text-2xl font-bold text-gray-500 uppercase tracking-widest mb-2">1-Jamoa</span>
+                    <span class="text-7xl font-black text-blue-700" id="score-1">0</span>
                 </div>
-                <div class="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-red-500 flex flex-col items-center justify-center">
-                    <span class="font-bold text-gray-500 mb-2">2-Jamoa</span>
-                    <span class="text-4xl font-black text-red-600" id="score-2">0</span>
+                <!-- 2-Jamoa -->
+                <div class="bg-red-50 p-8 rounded-3xl border-t-8 border-red-600 flex flex-col items-center shadow-lg">
+                    <span class="text-2xl font-bold text-gray-500 uppercase tracking-widest mb-2">2-Jamoa</span>
+                    <span class="text-7xl font-black text-red-700" id="score-2">0</span>
                 </div>
-                <div class="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-yellow-500 flex flex-col items-center justify-center">
-                    <span class="font-bold text-gray-500 mb-2">3-Jamoa</span>
-                    <span class="text-4xl font-black text-yellow-600" id="score-3">0</span>
+                <!-- 3-Jamoa -->
+                <div class="bg-yellow-50 p-8 rounded-3xl border-t-8 border-yellow-500 flex flex-col items-center shadow-lg">
+                    <span class="text-2xl font-bold text-gray-500 uppercase tracking-widest mb-2">3-Jamoa</span>
+                    <span class="text-7xl font-black text-yellow-600" id="score-3">0</span>
                 </div>
-                <div class="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-green-500 flex flex-col items-center justify-center">
-                    <span class="font-bold text-gray-500 mb-2">4-Jamoa</span>
-                    <span class="text-4xl font-black text-green-600" id="score-4">0</span>
+                <!-- 4-Jamoa -->
+                <div class="bg-green-50 p-8 rounded-3xl border-t-8 border-green-600 flex flex-col items-center shadow-lg">
+                    <span class="text-2xl font-bold text-gray-500 uppercase tracking-widest mb-2">4-Jamoa</span>
+                    <span class="text-7xl font-black text-green-700" id="score-4">0</span>
                 </div>
             </div>
 
-            <button onclick="location.reload()" class="px-10 py-4 bg-gray-900 text-white rounded-2xl hover:bg-black transition font-bold shadow-2xl flex items-center gap-3 text-lg">
+            <button onclick="location.reload()" class="mt-12 px-16 py-6 bg-gray-900 text-white rounded-3xl hover:bg-black transition font-bold shadow-2xl flex items-center gap-4 text-3xl">
                 <i class="fas fa-redo-alt"></i> Qayta Boshlash
             </button>
         </div>
@@ -259,7 +265,8 @@
             
             // Faqat nomni ko'rsatish (overlay), rasm allaqachon ko'rinib turibdi
             regionNameOverlayEl.classList.remove('hidden');
-            regionNameOverlayEl.classList.add('reveal-anim');
+            regionNameOverlayEl.classList.add('flex'); // hidden o'rniga flex
+            regionNameOverlayEl.classList.add('animate-slide-in');
             
             showAnswerBtn.classList.add('opacity-50', 'cursor-not-allowed');
             showAnswerBtn.disabled = true;
@@ -288,7 +295,8 @@
         function resetAnswerUI() {
             // Overlayni yashirish (nomni bekitish)
             regionNameOverlayEl.classList.add('hidden');
-            regionNameOverlayEl.classList.remove('reveal-anim');
+            regionNameOverlayEl.classList.remove('flex');
+            regionNameOverlayEl.classList.remove('animate-slide-in');
             
             // Tugmani qayta yoqish
             showAnswerBtn.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -305,6 +313,9 @@
 
         function finishGame() {
             gameScreen.classList.add('hidden');
+            // Header ni ham yashiramiz toza ekran uchun
+            document.querySelector('header').classList.add('hidden');
+            
             resultScreen.classList.remove('hidden');
             resultScreen.classList.add('flex');
 
