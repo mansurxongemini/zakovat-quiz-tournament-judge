@@ -3,327 +3,540 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>O'zbekiston Puzzle - Smartboard Version</title>
+    <title>Ma'muriy Hududiy O'zgarishlar (PRO)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: #ffffff;
-            overflow: hidden; /* Scroll bo'lmasligi uchun */
-        }
+        body { font-family: 'Inter', sans-serif; }
 
-        /* 3D Button Effect - Kattalashtirilgan */
-        .team-btn {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            top: 0;
-            border-bottom-width: 8px; /* Qalinroq 3D effekt */
-        }
-
-        .team-btn:active {
-            top: 8px;
-            border-bottom-width: 0px;
-            transform: translateY(2px);
-        }
-
-        /* Active State Animation */
-        .team-btn.active {
-            background: #16a34a; /* Green-600 */
-            color: white;
-            border-color: #14532d; /* Green-900 */
-            transform: scale(1.05);
-            box-shadow: 0 0 30px rgba(34, 197, 94, 0.6);
-        }
-
-        /* Check Button Animation */
-        .check-btn {
-            transition: transform 0.2s;
-        }
-        .check-btn:active {
-            transform: scale(0.9);
-        }
-
-        /* Map Image Styles */
-        .map-image-contain {
-            object-fit: contain;
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15));
+        /* Glassmorphism */
+        .glass {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         /* Animations */
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
+        .card-enter { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
+        .answer-reveal { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        @keyframes popIn { 
+            0% { opacity: 0; transform: scale(0.9); } 
+            100% { opacity: 1; transform: scale(1); } 
         }
-        .animate-slide-in {
-            animation: slideIn 0.5s ease-out forwards;
+        @keyframes pulse-critical {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
         }
 
-        /* Grid Background for aesthetic (subtle) */
-        .bg-grid {
-            background-image: radial-gradient(#e5e7eb 2px, transparent 2px);
-            background-size: 40px 40px;
+        .timer-critical { 
+            color: #ef4444; 
+            animation: pulse-critical 1.5s infinite;
+            text-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Confetti Canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
         }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col bg-white bg-grid">
+<body class="bg-[#0B1120] text-slate-100 min-h-screen flex flex-col relative overflow-y-auto selection:bg-blue-500 selection:text-white">
 
-    <!-- HEADER QISMI (Yuqori panel) -->
-    <header class="w-full h-[10vh] flex justify-between items-center px-12 border-b-4 border-gray-100 bg-white z-10">
-        <div>
-            <h1 class="text-4xl font-black text-blue-900 tracking-widest uppercase">PUZZLE MAP</h1>
-            <p class="text-xl text-gray-400 font-bold mt-1">O'zbekiston bo'ylab sayohat</p>
-        </div>
-        
-        <!-- Katta Savol Hisoblagich -->
-        <div class="flex items-center gap-4 bg-blue-50 px-8 py-4 rounded-2xl border-2 border-blue-100">
-            <span class="text-3xl text-blue-800 font-bold uppercase">Savol:</span>
-            <div class="flex items-end baseline">
-                <span id="question-counter" class="text-6xl font-black text-blue-600 leading-none">1</span>
-                <span class="text-4xl text-gray-400 font-bold">/14</span>
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-40 glass border-b-0 shadow-2xl transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 py-3 md:px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            <!-- Logo & Title -->
+            <div class="flex items-center gap-4 w-full md:w-auto">
+                <div class="relative group">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg blur opacity-40 group-hover:opacity-75 transition duration-200"></div>
+                    <div class="relative bg-slate-900 p-2.5 rounded-lg border border-slate-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 uppercase">MA'MURIY SUD PROCESSI</h1>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        <p class="text-xs text-slate-400 font-medium tracking-wide">JONLI EFIR</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timer & Controls -->
+            <div class="flex items-center gap-3 w-full md:w-auto justify-between bg-slate-800/50 p-1.5 rounded-2xl border border-slate-700/50 backdrop-blur-md">
+                
+                <!-- Time Adjust -->
+                <div class="flex flex-col gap-0.5 px-1">
+                    <button onclick="soundManager.click(); adjustTime(60)" class="text-[10px] font-bold text-green-400 hover:bg-slate-700/50 px-2 py-0.5 rounded transition">+1 MIN</button>
+                    <button onclick="soundManager.click(); adjustTime(-60)" class="text-[10px] font-bold text-red-400 hover:bg-slate-700/50 px-2 py-0.5 rounded transition">-1 MIN</button>
+                </div>
+
+                <!-- Main Clock -->
+                <div id="timerDisplay" class="text-4xl md:text-5xl font-black font-mono tracking-tighter text-white px-4 min-w-[140px] text-center" style="font-variant-numeric: tabular-nums;">
+                    03:00
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-1 pr-1">
+                    <button id="btnStart" onclick="toggleTimer()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg active:scale-95 transition-all group">
+                        <svg id="iconPlay" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <svg id="iconPause" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden fill-current animate-pulse" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    </button>
+                    
+                    <button onclick="soundManager.error(); finishEarly()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-700 hover:bg-red-600 hover:text-white text-slate-300 transition-all active:scale-95" title="Tugatish">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                        </svg>
+                    </button>
+
+                    <button onclick="soundManager.click(); resetApp()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 transition-all active:scale-95" title="Qayta yuklash">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </button>
+
+                    <button onclick="toggleFullScreen()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 transition-all active:scale-95" title="To'liq ekran">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- ASOSIY QISM (O'rta) -->
-    <main id="game-screen" class="flex-1 w-full flex flex-col items-center justify-between p-8 relative">
-        
-        <!-- Savol Matni (Juda katta) -->
-        <h2 class="text-5xl md:text-6xl font-extrabold text-gray-800 text-center mb-4 mt-4 drop-shadow-sm">
-            Bu qaysi hudud?
-        </h2>
-
-        <!-- Xarita Rasmi (Ekran markazini egallaydi) -->
-        <div class="flex-1 w-full flex items-center justify-center relative my-4">
-            <!-- Rasm -->
-            <img 
-                id="region-image" 
-                src="" 
-                alt="Hudud Rasmi" 
-                class="h-full w-auto max-h-[50vh] map-image-contain transition-transform duration-700"
-            >
-            
-            <!-- Javob Overlay (Nom chiqishi) -->
-            <div id="region-name-overlay" class="absolute bottom-10 bg-white/90 backdrop-blur-md px-12 py-6 rounded-3xl border-4 border-blue-500 shadow-2xl hidden animate-slide-in transform translate-y-10">
-                <h2 id="region-name-display" class="text-6xl font-black text-blue-900 tracking-wide text-center uppercase">Hudud Nomi</h2>
-            </div>
-        </div>
-
-        <!-- PASTKI BOSHQARUV PANELI (Footer Controls) -->
-        <div class="w-full h-[25vh] flex flex-col gap-6 justify-end pb-4">
-            
-            <!-- 1. JAMOA TANLASH (Katta Tugmalar) -->
-            <div class="flex justify-center gap-8 w-full px-12">
-                <button onclick="manualSelect(1)" id="btn-1" class="team-btn flex-1 h-32 bg-gray-100 border-gray-300 rounded-3xl text-6xl font-black text-gray-600 shadow-lg hover:bg-white flex items-center justify-center">1</button>
-                <button onclick="manualSelect(2)" id="btn-2" class="team-btn flex-1 h-32 bg-gray-100 border-gray-300 rounded-3xl text-6xl font-black text-gray-600 shadow-lg hover:bg-white flex items-center justify-center">2</button>
-                <button onclick="manualSelect(3)" id="btn-3" class="team-btn flex-1 h-32 bg-gray-100 border-gray-300 rounded-3xl text-6xl font-black text-gray-600 shadow-lg hover:bg-white flex items-center justify-center">3</button>
-                <button onclick="manualSelect(4)" id="btn-4" class="team-btn flex-1 h-32 bg-gray-100 border-gray-300 rounded-3xl text-6xl font-black text-gray-600 shadow-lg hover:bg-white flex items-center justify-center">4</button>
-            </div>
-
-            <!-- 2. HARAKAT TUGMALARI (Pastki qator) -->
-            <div class="flex justify-between items-center px-12 mt-2">
-                
-                <!-- Javobni Ko'rsatish -->
-                <button onclick="showAnswer()" id="show-answer-btn" class="flex-1 max-w-md h-24 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-3xl font-bold shadow-xl transition transform active:scale-95 flex items-center justify-center gap-4">
-                    <i class="fas fa-eye"></i> JAVOBNI KO'RSATISH
-                </button>
-
-                <!-- Check (Tasdiqlash) - O'rtada emas, o'ng tomonda yirik -->
-                <div class="flex gap-6">
-                    <button onclick="skipQuestion()" class="h-24 px-8 text-gray-400 hover:text-red-500 font-bold text-2xl transition flex items-center gap-2 rounded-2xl hover:bg-gray-50">
-                        O'tkazish <i class="fas fa-forward"></i>
-                    </button>
-
-                    <button onclick="submitAnswer()" class="check-btn h-24 w-24 bg-green-500 text-white rounded-full shadow-xl flex items-center justify-center text-5xl border-4 border-green-200 ring-4 ring-green-100">
-                        <i class="fas fa-check"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
+    <!-- MAIN GRID -->
+    <main id="cardsContainer" class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 p-4 md:p-6 max-w-8xl mx-auto w-full pb-20">
+        <!-- Cards rendered by JS -->
     </main>
 
-    <!-- NATIJALAR OYNASI (Fullscreen) -->
-    <div id="result-screen" class="hidden fixed inset-0 bg-white z-50 flex flex-col items-center justify-center p-12">
-        <div class="w-full max-w-7xl flex flex-col items-center h-full justify-between py-10">
-            
-            <div class="text-center">
-                <i class="fas fa-trophy text-yellow-400 text-9xl drop-shadow-xl mb-6 animate-bounce"></i>
-                <h2 class="text-7xl font-black text-blue-900 mb-4">O'YIN YAKUNLANDI!</h2>
-                <p class="text-3xl text-gray-500">Barcha 14 ta hudud muvaffaqiyatli o'rganildi.</p>
-            </div>
-            
-            <!-- Xarita (Juda katta) -->
-            <div class="flex-1 w-full flex items-center justify-center p-8">
-                <img src="https://gadm.org/img/480/gadm/UZB/UZB_labs.png" class="h-full w-auto max-h-[50vh] object-contain drop-shadow-2xl" alt="O'zbekiston Xaritasi">
-            </div>
-
-            <!-- Natijalar Jadvali (Grid) -->
-            <div class="grid grid-cols-4 gap-8 w-full">
-                <!-- 1-Jamoa -->
-                <div class="bg-blue-50 p-8 rounded-3xl border-t-8 border-blue-600 flex flex-col items-center shadow-lg">
-                    <span class="text-2xl font-bold text-gray-500 uppercase tracking-widest mb-2">1-Jamoa</span>
-                    <span class="text-7xl font-black text-blue-700" id="score-1">0</span>
-                </div>
-                <!-- 2-Jamoa -->
-                <div class="bg-red-50 p-8 rounded-3xl border-t-8 border-red-600 flex flex-col items-center shadow-lg">
-                    <span class="text-2xl font-bold text-gray-500 uppercase tracking-widest mb-2">2-Jamoa</span>
-                    <span class="text-7xl font-black text-red-700" id="score-2">0</span>
-                </div>
-                <!-- 3-Jamoa -->
-                <div class="bg-yellow-50 p-8 rounded-3xl border-t-8 border-yellow-500 flex flex-col items-center shadow-lg">
-                    <span class="text-2xl font-bold text-gray-500 uppercase tracking-widest mb-2">3-Jamoa</span>
-                    <span class="text-7xl font-black text-yellow-600" id="score-3">0</span>
-                </div>
-                <!-- 4-Jamoa -->
-                <div class="bg-green-50 p-8 rounded-3xl border-t-8 border-green-600 flex flex-col items-center shadow-lg">
-                    <span class="text-2xl font-bold text-gray-500 uppercase tracking-widest mb-2">4-Jamoa</span>
-                    <span class="text-7xl font-black text-green-700" id="score-4">0</span>
-                </div>
-            </div>
-
-            <button onclick="location.reload()" class="mt-12 px-16 py-6 bg-gray-900 text-white rounded-3xl hover:bg-black transition font-bold shadow-2xl flex items-center gap-4 text-3xl">
-                <i class="fas fa-redo-alt"></i> Qayta Boshlash
-            </button>
-        </div>
-    </div>
+    <!-- FOOTER STATUS -->
+    <footer class="fixed bottom-0 left-0 w-full bg-slate-900/90 backdrop-blur text-center py-2 border-t border-slate-800 z-30">
+        <p class="text-xs text-slate-500 font-mono">SYSTEM READY • AUDIO ENABLED • V1.0.0</p>
+    </footer>
 
     <script>
-        // MA'LUMOTLAR BAZASI
-        const regions = [
-            { name: "Andijon viloyati", image: "https://gadm.org/img/480/gadm/UZB/andijon/UZB_andijon.png" },
-            { name: "Buxoro viloyati", image: "https://gadm.org/img/480/gadm/UZB/bukhoro/UZB_bukhoro.png" },
-            { name: "Farg'ona viloyati", image: "https://gadm.org/img/480/gadm/UZB/ferghana/UZB_ferghana.png" },
-            { name: "Jizzax viloyati", image: "https://gadm.org/img/480/gadm/UZB/jizzakh/UZB_jizzakh.png" },
-            { name: "Xorazm viloyati", image: "https://gadm.org/img/480/gadm/UZB/khorezm/UZB_khorezm.png" },
-            { name: "Namangan viloyati", image: "https://gadm.org/img/480/gadm/UZB/namangan/UZB_namangan.png" },
-            { name: "Navoiy viloyati", image: "https://gadm.org/img/480/gadm/UZB/navoi/UZB_navoi.png" },
-            { name: "Qashqadaryo viloyati", image: "https://gadm.org/img/480/gadm/UZB/kashkadarya/UZB_kashkadarya.png" },
-            { name: "Qoraqalpog'iston Respublikasi", image: "https://gadm.org/img/480/gadm/UZB/karakalpakstan/UZB_karakalpakstan.png" },
-            { name: "Samarqand viloyati", image: "https://gadm.org/img/480/gadm/UZB/samarkand/UZB_samarkand.png" },
-            { name: "Sirdaryo viloyati", image: "https://gadm.org/img/480/gadm/UZB/sirdaryo/UZB_sirdaryo.png" },
-            { name: "Surxondaryo viloyati", image: "https://gadm.org/img/480/gadm/UZB/surkhandarya/UZB_surkhandarya.png" },
-            { name: "Toshkent viloyati", image: "https://gadm.org/img/480/gadm/UZB/tashkent/UZB_tashkent.png" },
-            { name: "Toshkent shahri", image: "https://gadm.org/img/480/gadm/UZB/tashkentcity/UZB_tashkentcity.png" }
+        // --- 1. PROFESSIONAL OVOZ TIZIMI (AudioContext) ---
+        const soundManager = {
+            ctx: null,
+            init: function() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+            playTone: function(freq, type, duration, vol = 0.1) {
+                if (!this.ctx) this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            },
+            click: function() { this.playTone(800, 'sine', 0.1, 0.05); },
+            tick: function() { this.playTone(1000, 'square', 0.05, 0.03); },
+            warning: function() { this.playTone(600, 'sawtooth', 0.1, 0.05); },
+            alarm: function() {
+                if (!this.ctx) this.init();
+                const now = this.ctx.currentTime;
+                [440, 330, 440, 330].forEach((f, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = f;
+                    gain.gain.setValueAtTime(0.2, now + i * 0.2);
+                    gain.gain.linearRampToValueAtTime(0, now + i * 0.2 + 0.15);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + i * 0.2);
+                    osc.stop(now + i * 0.2 + 0.2);
+                });
+            },
+            success: function() {
+                if (!this.ctx) this.init();
+                const now = this.ctx.currentTime;
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = f;
+                    gain.gain.setValueAtTime(0.1, now + i * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.4);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + i * 0.1);
+                    osc.stop(now + i * 0.1 + 0.5);
+                });
+            },
+            error: function() { this.playTone(150, 'sawtooth', 0.3, 0.2); }
+        };
+
+        // --- 2. KONFETTI TIZIMI ---
+        const confetti = {
+            canvas: document.getElementById('confetti-canvas'),
+            ctx: document.getElementById('confetti-canvas').getContext('2d'),
+            particles: [],
+            isActive: false,
+            init: function() {
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            },
+            resize: function() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            },
+            spawn: function(x, y) {
+                for(let i=0; i<50; i++) {
+                    this.particles.push({
+                        x: x, y: y,
+                        vx: (Math.random() - 0.5) * 10,
+                        vy: (Math.random() - 1) * 15,
+                        color: `hsl(${Math.random()*360}, 100%, 50%)`,
+                        size: Math.random() * 8 + 4,
+                        life: 100
+                    });
+                }
+                if (!this.isActive) {
+                    this.isActive = true;
+                    this.loop();
+                }
+            },
+            loop: function() {
+                if (this.particles.length === 0) {
+                    this.isActive = false;
+                    this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+                    return;
+                }
+                this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+                for(let i=this.particles.length-1; i>=0; i--) {
+                    let p = this.particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.5; // Gravity
+                    p.life--;
+                    p.size *= 0.95;
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+                    this.ctx.fill();
+                    if(p.life <= 0) this.particles.splice(i, 1);
+                }
+                requestAnimationFrame(() => this.loop());
+            }
+        };
+        confetti.init();
+
+        // --- 3. MA'LUMOTLAR BAZASI ---
+        const questionPool = [
+             {
+                question: "Buxoro va Navoiy hokimlari suv ombori hududini almashish bo'yicha 'Memorandum' imzoladi. Bu hujjat chegarani o'zgartirish uchun asos bo'la oladimi?",
+                answer: "YO'Q. Memorandum yuridik kuchga ega emas. Chegarani o'zgartirish faqat SENAT qarori bilan, Vazirlar Mahkamasi taklifiga binoan amalga oshiriladi.",
+                law: "Konstitutsiya 81-modda; Ma'muriy-hududiy tuzilish qonuni"
+            },
+            {
+                question: "Toshkent shahrida 'Yangi Avlod' tumani tuzilmoqda. Shahar Kengashi 'Davlat ehtiyoji' sababli aholi fikrini o'rganishni rad etdi. Bu to'g'rimi?",
+                answer: "NOQONUNIY. Qonunning 6-moddasiga ko'ra, aholi fikrini hisobga olish majburiy (imperativ) talabdir. 'Davlat ehtiyoji' bu tartibni bekor qilmaydi.",
+                law: "Ma'muriy-hududiy tuzilish qonuni, 6-modda"
+            },
+            {
+                question: "Vazirlar Mahkamasi o'z qarori bilan Farg'ona tumanini 'Maxsus zona' deb e'lon qilib, uning chegarasini o'zgartirdi. Bu qaror kuchga egami?",
+                answer: "G'AYRIKONSTITUTSIYAVIY. Vazirlar Mahkamasi ijro organi bo'lib, hududiy chegaralarni o'zgartirish vakolatiga ega emas. Bu faqat Oliy Majlis Senati vakolatida.",
+                law: "Konstitutsiya 81-modda"
+            },
+            {
+                question: "Xalq deputatlari Xorazm viloyat Kengashi Urganch tumaniga 'Jaloliddin Manguberdi' nomini berish haqida uzil-kesil qaror qabul qildi. Xato qayerda?",
+                answer: "VAKOLAT BUZILDI. Viloyat Kengashi nom berish bo'yicha qaror emas, faqat ILTIMOSNOMA kiritishi mumkin. Nom berish Senat qarori bilan bo'ladi.",
+                law: "Geografik obyektlar nomlari to'g'risida qonun"
+            },
+            {
+                question: "Andijon viloyati tarkibida bo'lgan 'Xonobod' shahrini viloyat bo'ysunuvidagi shaharlar ro'yxatidan chiqarib, tuman bo'ysunuviga o'tkazishni kim hal qiladi?",
+                answer: "OLIY MAJLIS SENATI. Viloyat bo'ysunuvidagi shaharlar toifasini o'zgartirish Prezident farmoni emas, Senat qarori bilan amalga oshiriladi.",
+                law: "Ma'muriy-hududiy tuzilish to'g'risida qonun, 18-modda"
+            },
+            {
+                question: "Surxondaryo viloyati Termiz shahrining 'Do'stlik' mahallasini Termiz tumaniga o'tkazish uchun Senat qarori shartmi?",
+                answer: "SHART EMAS. Mahalla (shahar ichidagi chegara) chegaralarini o'zgartirish Xalq deputatlari shahar va tuman Kengashlari vakolatiga kiradi, Senatga chiqmaydi.",
+                law: "O'zini o'zi boshqarish organlari to'g'risida qonun"
+            },
+            {
+                question: "Prezident Farmoni bilan Sirdaryo viloyatida 'Erkin iqtisodiy zona' tashkil etildi va unga alohida ma'muriy maqom berildi. Bu yangi tuman tuzildi deganimi?",
+                answer: "YO'Q. Iqtisodiy maqom (EIZ) ma'muriy-hududiy birlik (tuman/shahar) tuzilganini anglatmaydi. Tuman tuzish uchun alohida Senat qarori kerak.",
+                law: "Ma'muriy-hududiy tuzilish va EIZ to'g'risidagi qonunlar"
+            },
+            {
+                question: "Fuqarolar tashabbuskor guruhi tumanni ikkiga bo'lish bo'yicha referendum o'tkazishni talab qilmoqda. Bu referendum natijasi qonuniy kuchga egami?",
+                answer: "YO'Q. Ma'muriy chegaralar masalasi mahalliy referendum predmeti bo'la olmaydi. Aholi fikri yig'ilishlar orqali olinadi, lekin referendum orqali hal qilinmaydi.",
+                law: "O'zbekiston Respublikasining Referendumi to'g'risidagi qonun"
+            },
+            {
+                question: "Qashqadaryo viloyat hokimi 'Optimallashtirish' dasturi doirasida ikki qishloq fuqarolar yig'inini birlashtirish haqida qaror chiqardi. Hokim haqlimi?",
+                answer: "HAQLI EMAS. Fuqarolar yig'inlarini (QFY/MFY) tuzish va tugatish Xalq deputatlari tuman Kengashi vakolatidir, hokimning yakka tartibdagi qarori bilan emas.",
+                law: "Fuqarolar yig'ini raisi saylovi to'g'risida qonun"
+            },
+            {
+                question: "Toshkent viloyati markazini Nurafshon shahridan boshqa shahar ko'chirish taklifi berildi. Bu qarorni viloyat hokimi qabul qiladimi?",
+                answer: "YO'Q. Viloyat ma'muriy markazini belgilash yoki ko'chirish Oliy Majlis Senati tomonidan, Vazirlar Mahkamasi taklifiga binoan amalga oshiriladi.",
+                law: "Ma'muriy-hududiy tuzilish to'g'risida qonun, 5-modda"
+            },
+            {
+                question: "So'x tumanining (eksklav) chegaralarini kengaytirish bo'yicha O'zbekiston Senati bir tomonlama qaror qabul qildi. Bu yuridik jihatdan yetarlimi?",
+                answer: "YETARLI EMAS. Davlat chegarasini o'zgartirish xalqaro shartnomalarni talab qiladi. Ma'muriy qonunchilikdan tashqari, Davlat chegarasi to'g'risidagi qonun va xalqaro kelishuv shart.",
+                law: "O'zbekiston Respublikasining Davlat chegarasi to'g'risida qonun"
+            },
+            {
+                question: "Yangi tashkil etilgan tumanga 'Turon' nomini berish uchun aholidan so'rovnoma o'tkazildi, 80% qarshi chiqdi. Senat baribir shu nomni tasdiqlay oladimi?",
+                answer: "HA, TASDIQLAY OLADI. Qonunga ko'ra, aholi fikri 'inobatga olinadi', lekin bu veto qo'yish huquqini bermaydi. Yakuniy qaror davlat manfaatlari asosida Senatda qoladi.",
+                law: "Geografik obyektlarning nomlari to'g'risida qonun"
+            }
         ];
 
-        // O'YIN STATE
-        let currentQuestionIndex = 0;
-        let activeTeam = 1;
-        let scores = { 1: 0, 2: 0, 3: 0, 4: 0 };
-        let turnQueue = []; 
+        const teamConfigs = [
+            { id: 1, name: "1-JAMOA", color: "indigo" },
+            { id: 2, name: "2-JAMOA", color: "blue" },
+            { id: 3, name: "3-JAMOA", color: "orange" },
+            { id: 5, name: "5-JAMOA", color: "purple" }
+        ];
 
-        // Elementlar
-        const questionCounterEl = document.getElementById('question-counter');
-        const regionNameDisplayEl = document.getElementById('region-name-display');
-        const regionImageEl = document.getElementById('region-image');
-        const regionNameOverlayEl = document.getElementById('region-name-overlay');
-        const gameScreen = document.getElementById('game-screen');
-        const resultScreen = document.getElementById('result-screen');
-        const showAnswerBtn = document.getElementById('show-answer-btn');
+        // --- 4. DASTUR MANTIQI ---
+        let scenarios = [];
+        let timeLeft = 180;
+        let isActive = false;
+        let isFinished = false;
+        let timerInterval = null;
 
-        initGame();
-
-        function initGame() {
-            shuffleArray(regions);
-            currentQuestionIndex = 0;
-            updateQuestionUI();
-            setNextRandomTeam();
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
         }
 
-        function setNextRandomTeam() {
-            if (turnQueue.length === 0) {
-                turnQueue = [1, 2, 3, 4];
-                shuffleArray(turnQueue);
-            }
-            const nextTeam = turnQueue.pop();
-            highlightTeam(nextTeam);
+        function init() {
+            const selected = shuffle([...questionPool]).slice(0, 4);
+            scenarios = teamConfigs.map((team, i) => ({ ...team, ...selected[i] }));
+            renderCards();
+            updateTimerDisplay();
         }
 
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
+        function toggleTimer() {
+            soundManager.click();
+            isActive ? pauseTimer() : startTimer();
         }
 
-        function highlightTeam(teamId) {
-            activeTeam = teamId;
-            document.querySelectorAll('.team-btn').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = document.getElementById(`btn-${teamId}`);
-            if (activeBtn) activeBtn.classList.add('active');
-        }
-
-        function manualSelect(teamId) {
-            highlightTeam(teamId);
-        }
-
-        function showAnswer() {
-            const currentRegion = regions[currentQuestionIndex];
-            regionNameDisplayEl.innerText = currentRegion.name;
+        function startTimer() {
+            if (timeLeft <= 0) return;
+            soundManager.init(); // AudioContext ni faollashtirish
+            isActive = true;
+            document.getElementById('iconPlay').classList.add('hidden');
+            document.getElementById('iconPause').classList.remove('hidden');
             
-            // Faqat nomni ko'rsatish (overlay), rasm allaqachon ko'rinib turibdi
-            regionNameOverlayEl.classList.remove('hidden');
-            regionNameOverlayEl.classList.add('flex'); // hidden o'rniga flex
-            regionNameOverlayEl.classList.add('animate-slide-in');
-            
-            showAnswerBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            showAnswerBtn.disabled = true;
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    // Ovozli effektlar
+                    if (timeLeft <= 10) soundManager.warning(); // Oxirgi 10 soniyada signal
+                    else if (timeLeft % 30 === 0) soundManager.tick(); // Har 30 sekunda tik
+                    
+                    updateTimerDisplay();
+                } else {
+                    soundManager.alarm();
+                    finishTimer();
+                }
+            }, 1000);
         }
 
-        function submitAnswer() {
-            scores[activeTeam] += 100;
-            nextQuestion();
+        function pauseTimer() {
+            isActive = false;
+            clearInterval(timerInterval);
+            document.getElementById('iconPlay').classList.remove('hidden');
+            document.getElementById('iconPause').classList.add('hidden');
         }
 
-        function skipQuestion() {
-            nextQuestion();
+        function finishTimer() {
+            pauseTimer();
+            timeLeft = 0;
+            isFinished = true;
+            updateTimerDisplay();
+            updateCardsToFinishedState();
         }
 
-        function nextQuestion() {
-            currentQuestionIndex++;
-            if (currentQuestionIndex < regions.length) {
-                resetAnswerUI();
-                updateQuestionUI();
-                setNextRandomTeam(); 
+        function finishEarly() { if (!isFinished) finishTimer(); }
+
+        function adjustTime(s) {
+            if (isActive) return;
+            timeLeft = Math.max(0, timeLeft + s);
+            isFinished = false;
+            updateTimerDisplay();
+        }
+
+        function resetApp() {
+            pauseTimer();
+            timeLeft = 180;
+            isFinished = false;
+            init();
+        }
+
+        function toggleFullScreen() {
+            soundManager.click();
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => console.log(e));
             } else {
-                finishGame();
+                if (document.exitFullscreen) document.exitFullscreen();
             }
         }
 
-        function resetAnswerUI() {
-            // Overlayni yashirish (nomni bekitish)
-            regionNameOverlayEl.classList.add('hidden');
-            regionNameOverlayEl.classList.remove('flex');
-            regionNameOverlayEl.classList.remove('animate-slide-in');
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            const el = document.getElementById('timerDisplay');
+            el.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
             
-            // Tugmani qayta yoqish
-            showAnswerBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            showAnswerBtn.disabled = false;
+            if (timeLeft === 0) {
+                el.className = "text-4xl md:text-5xl font-black font-mono tracking-tighter px-4 min-w-[140px] text-center timer-critical";
+            } else if (timeLeft <= 10) {
+                el.className = "text-4xl md:text-5xl font-black font-mono tracking-tighter px-4 min-w-[140px] text-center text-red-400";
+            } else {
+                el.className = "text-4xl md:text-5xl font-black font-mono tracking-tighter px-4 min-w-[140px] text-center text-white";
+            }
         }
 
-        function updateQuestionUI() {
-            questionCounterEl.innerText = currentQuestionIndex + 1;
-            
-            // Yangi rasmni darhol yuklash
-            const currentRegion = regions[currentQuestionIndex];
-            regionImageEl.src = currentRegion.image;
+        function getTeamStyle(color) {
+            const styles = {
+                indigo: { grad: 'from-indigo-600 to-slate-900', border: 'border-indigo-500/30' },
+                blue: { grad: 'from-blue-600 to-slate-900', border: 'border-blue-500/30' },
+                orange: { grad: 'from-orange-600 to-slate-900', border: 'border-orange-500/30' },
+                purple: { grad: 'from-purple-600 to-slate-900', border: 'border-purple-500/30' },
+            };
+            return styles[color];
         }
 
-        function finishGame() {
-            gameScreen.classList.add('hidden');
-            // Header ni ham yashiramiz toza ekran uchun
-            document.querySelector('header').classList.add('hidden');
+        function renderCards() {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
             
-            resultScreen.classList.remove('hidden');
-            resultScreen.classList.add('flex');
+            scenarios.forEach((item, index) => {
+                const style = getTeamStyle(item.color);
+                
+                // Animation delay for stagger effect
+                const delay = index * 100;
+                
+                container.innerHTML += `
+                    <div id="card-${item.id}" 
+                         style="animation-delay: ${delay}ms"
+                         class="card-enter flex flex-col relative h-full bg-gradient-to-br ${style.grad} rounded-2xl border ${style.border} overflow-hidden shadow-2xl hover:shadow-blue-900/20 transition-all duration-300 group">
+                        
+                        <!-- Decoration Lines -->
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
 
-            document.getElementById('score-1').innerText = scores[1];
-            document.getElementById('score-2').innerText = scores[2];
-            document.getElementById('score-3').innerText = scores[3];
-            document.getElementById('score-4').innerText = scores[4];
+                        <!-- Header -->
+                        <div class="px-5 py-4 bg-black/20 backdrop-blur-sm border-b border-white/5 flex justify-between items-center z-10">
+                            <h2 class="font-black text-2xl uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70">${item.name}</h2>
+                            <span class="bg-white/10 px-3 py-1 rounded text-xs font-bold text-white/70 border border-white/5">KAZUS №${item.id}</span>
+                        </div>
+                        
+                        <!-- Body -->
+                        <div class="flex-1 p-6 flex flex-col justify-center relative z-10">
+                            
+                            <!-- QUESTION -->
+                            <div id="question-${item.id}" class="h-full flex items-center transition-all duration-500">
+                                <p class="text-xl md:text-2xl font-bold text-slate-100 leading-snug drop-shadow-md">
+                                    ${item.question}
+                                </p>
+                            </div>
+
+                            <!-- ANSWER -->
+                            <div id="answer-${item.id}" class="hidden h-full flex flex-col justify-center gap-4">
+                                <div class="relative bg-black/40 p-5 rounded-xl border border-green-500/30 shadow-lg backdrop-blur-md">
+                                    <div class="absolute -top-3 -left-3 bg-green-500 text-black text-xs font-black px-2 py-1 rounded shadow-lg transform -rotate-2">TO'G'RI JAVOB</div>
+                                    <p class="text-xl md:text-2xl font-bold text-white leading-relaxed">
+                                        ${item.answer}
+                                    </p>
+                                </div>
+                                <div class="bg-yellow-500/10 p-4 rounded-xl border-l-4 border-yellow-500">
+                                    <span class="text-yellow-400 font-bold uppercase text-xs tracking-wider block mb-1">Huquqiy Asos:</span>
+                                    <span class="text-lg text-yellow-100 font-mono font-medium">${item.law}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div id="footer-${item.id}" class="bg-black/30 p-4 border-t border-white/5 min-h-[80px] flex justify-center items-center z-10">
+                            <div class="flex items-center gap-3 text-yellow-400/80 animate-pulse">
+                                <div class="w-2 h-2 rounded-full bg-yellow-400"></div>
+                                <span class="text-sm font-bold tracking-widest uppercase">Tahlil jarayoni...</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
         }
+
+        function updateCardsToFinishedState() {
+            scenarios.forEach(item => {
+                const footer = document.getElementById(`footer-${item.id}`);
+                footer.innerHTML = `
+                    <button onclick="revealAnswer(${item.id}, this)" class="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold py-3 rounded-lg shadow-lg shadow-green-900/30 transform transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-wider border border-green-400/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        JAVOBNI OCHISH
+                    </button>
+                `;
+            });
+        }
+
+        function revealAnswer(id, btn) {
+            soundManager.success(); // Ovoz
+            
+            const card = document.getElementById(`card-${id}`);
+            const rect = btn.getBoundingClientRect();
+            
+            // Konfetti otish
+            confetti.spawn(rect.left + rect.width/2, rect.top);
+
+            document.getElementById(`question-${id}`).classList.add('hidden');
+            const answerDiv = document.getElementById(`answer-${id}`);
+            answerDiv.classList.remove('hidden');
+            answerDiv.classList.add('answer-reveal');
+
+            // Card Style Update
+            card.classList.remove('from-indigo-600', 'from-blue-600', 'from-orange-600', 'from-purple-600');
+            card.className = "flex flex-col relative h-full bg-slate-800 rounded-2xl border-2 border-green-500 overflow-hidden shadow-[0_0_30px_rgba(34,197,94,0.2)] transition-all duration-500";
+            
+            document.getElementById(`footer-${id}`).innerHTML = `
+                <div class="text-green-400 font-bold flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                    OCHILDI
+                </div>
+            `;
+        }
+
+        // Initialize
+        init();
     </script>
 </body>
 </html>
