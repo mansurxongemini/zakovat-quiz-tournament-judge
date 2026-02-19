@@ -3,322 +3,316 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ma'muri Hududiy Birliklarni O'zgartirish</title>
+    <title>O'zbekiston Puzzle - Pro Version</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Maxsus effektlar */
-        .card-transition {
-            transition: all 0.5s ease-in-out;
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap');
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
         }
-        .answer-box {
-            animation: fadeIn 0.5s ease-in;
+
+        /* 3D Button Effect */
+        .team-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            top: 0;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        .team-btn:active {
+            top: 4px;
+            box-shadow: 0 0px 0 0 #e5e7eb;
         }
-        @keyframes pulse-red {
-            0%, 100% { color: #ef4444; }
-            50% { color: #f87171; }
+
+        /* Active State Animation */
+        .team-btn.active {
+            background: linear-gradient(to bottom right, #22c55e, #16a34a);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.4), 0 4px 6px -2px rgba(34, 197, 94, 0.2);
+            border-color: #15803d;
+            animation: pulse-green 2s infinite;
         }
-        .timer-danger {
-            animation: pulse-red 1s infinite;
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        /* Reveal Animation */
+        .reveal-anim {
+            animation: slideUpFade 0.6s ease-out forwards;
+        }
+
+        @keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Map Image Containment */
+        .map-image-contain {
+            object-fit: contain;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
         }
     </style>
 </head>
-<body class="bg-slate-950 text-white font-sans min-h-screen flex flex-col p-4 overflow-hidden">
+<body class="h-screen flex items-center justify-center overflow-hidden bg-blue-50">
 
-    <!-- HEADER QISMI -->
-    <header class="bg-slate-900 p-4 rounded-2xl border border-slate-700 shadow-2xl mb-6 flex justify-between items-center">
+    <!-- OYIN OYNASI -->
+    <div id="game-screen" class="w-full max-w-lg h-full md:h-auto md:max-h-[95vh] glass-panel rounded-3xl shadow-2xl flex flex-col items-center p-6 relative border-t-4 border-blue-500 overflow-y-auto">
         
-        <!-- Sarlavha -->
-        <div class="flex items-center gap-4">
-            <div class="bg-blue-600 p-3 rounded-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
+        <!-- Header -->
+        <div class="w-full flex justify-between items-center mb-4 border-b pb-4 border-gray-100">
             <div>
-                <h1 class="text-3xl font-black tracking-wider text-white uppercase">Ma'muriy hududiy birliklarni o'zgartirish</h1>
-                <p class="text-slate-400 text-sm">Kazusli topshiriqlar paneli</p>
+                <h1 class="text-xl font-extrabold text-blue-900 uppercase tracking-widest">Puzzle Map</h1>
+                <p class="text-gray-400 text-xs font-semibold tracking-wide">O'zbekiston bo'ylab sayohat</p>
+            </div>
+            <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-bold text-sm shadow-inner">
+                Savol: <span id="question-counter" class="text-lg">1</span><span class="text-blue-400">/14</span>
             </div>
         </div>
 
-        <!-- Timer va Boshqaruv -->
-        <div class="flex items-center gap-6 bg-slate-800 p-3 rounded-xl border border-slate-700">
+        <!-- Savol Matni -->
+        <div class="text-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800" id="question-text">Bu qaysi hudud?</h2>
+            <p class="text-xs text-gray-500 mt-1">Xaritadagi shaklga qarab toping!</p>
+        </div>
+
+        <!-- 1. RASM QISMI (Hozir doim ko'rinadi) -->
+        <div id="image-container" class="w-full h-56 bg-white rounded-2xl flex items-center justify-center mb-6 relative overflow-hidden border border-gray-200 shadow-inner p-4">
             
-            <!-- Vaqtni o'zgartirish tugmalari -->
-            <div class="flex flex-col gap-1">
-                <button onclick="adjustTime(60)" class="bg-slate-700 hover:bg-slate-600 text-green-400 text-xs px-2 py-1 rounded font-bold transition">+ 1 daq</button>
-                <button onclick="adjustTime(-60)" class="bg-slate-700 hover:bg-slate-600 text-red-400 text-xs px-2 py-1 rounded font-bold transition">- 1 daq</button>
-            </div>
-
-            <!-- Asosiy Timer -->
-            <div id="timerDisplay" class="text-6xl font-black font-mono tracking-tighter text-blue-400 min-w-[180px] text-center">
-                03:00
-            </div>
-
-            <!-- Boshqaruv tugmalari -->
-            <div class="flex gap-2">
-                <button id="btnStart" onclick="toggleTimer()" class="p-4 rounded-full bg-green-600 hover:bg-green-500 text-white shadow-lg active:scale-95 transition">
-                    <svg id="iconPlay" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                    <svg id="iconPause" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                </button>
-                
-                <button onclick="finishEarly()" class="p-4 rounded-full bg-red-600 hover:bg-red-500 text-white shadow-lg active:scale-95 transition" title="Muddatidan oldin tugatish">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-                    </svg>
-                </button>
-
-                <button onclick="resetApp()" class="p-4 rounded-full bg-slate-600 hover:bg-slate-500 text-white shadow-lg active:scale-95 transition" title="Qayta yuklash">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                </button>
+            <!-- Asl Rasm (Endi doim ko'rinadi) -->
+            <img 
+                id="region-image" 
+                src="" 
+                alt="Hudud Rasmi" 
+                class="w-full h-full map-image-contain transition-all duration-500 transform hover:scale-105"
+            >
+            
+            <!-- Hudud Nomi (Boshida yashirin, Javob bosilganda chiqadi) -->
+            <div id="region-name-overlay" class="absolute inset-0 bg-blue-900 bg-opacity-90 flex items-center justify-center hidden backdrop-blur-sm transition-all duration-300">
+                <h2 id="region-name-display" class="text-2xl font-bold text-white tracking-wider text-center px-4">Hudud Nomi</h2>
             </div>
         </div>
-    </header>
 
-    <!-- ASOSIY GRID -->
-    <main id="cardsContainer" class="flex-1 grid grid-cols-2 gap-6 pb-4">
-        <!-- Kartalar JavaScript orqali yaratiladi -->
-    </main>
+        <!-- 2. JAMOA TANLASH (Random & Fair) -->
+        <div class="w-full mb-6">
+            <p class="text-center text-xs font-bold text-gray-400 mb-2 uppercase">Javob beruvchi jamoa:</p>
+            <div class="flex justify-center gap-4 md:gap-6">
+                <button onclick="manualSelect(1)" id="btn-1" class="team-btn w-14 h-14 rounded-xl border-b-4 border-gray-300 bg-white text-xl font-black text-gray-600 flex items-center justify-center shadow-md hover:bg-gray-50">1</button>
+                <button onclick="manualSelect(2)" id="btn-2" class="team-btn w-14 h-14 rounded-xl border-b-4 border-gray-300 bg-white text-xl font-black text-gray-600 flex items-center justify-center shadow-md hover:bg-gray-50">2</button>
+                <button onclick="manualSelect(3)" id="btn-3" class="team-btn w-14 h-14 rounded-xl border-b-4 border-gray-300 bg-white text-xl font-black text-gray-600 flex items-center justify-center shadow-md hover:bg-gray-50">3</button>
+                <button onclick="manualSelect(4)" id="btn-4" class="team-btn w-14 h-14 rounded-xl border-b-4 border-gray-300 bg-white text-xl font-black text-gray-600 flex items-center justify-center shadow-md hover:bg-gray-50">4</button>
+            </div>
+        </div>
 
-    <!-- JAVASCRIPT -->
+        <!-- Javobni Ko'rsatish Tugmasi -->
+        <button onclick="showAnswer()" id="show-answer-btn" class="mb-6 px-8 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 transition flex items-center gap-2 transform active:scale-95 w-full justify-center">
+            <i class="fas fa-eye"></i> Javobni Tekshirish
+        </button>
+
+        <!-- 3. TO'G'RI (Check) TUGMASI -->
+        <div class="w-full flex justify-between items-center mt-auto pt-4 border-t border-gray-100">
+            <button onclick="skipQuestion()" class="text-gray-400 hover:text-red-500 font-semibold text-sm transition px-4 flex items-center gap-1">
+                <i class="fas fa-forward"></i> O'tkazish
+            </button>
+            
+            <button onclick="submitAnswer()" class="check-btn bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white w-20 h-20 rounded-full shadow-xl shadow-green-200 flex items-center justify-center text-4xl border-4 border-white ring-4 ring-green-50 transition transform hover:rotate-12 hover:scale-110">
+                <i class="fas fa-check"></i>
+            </button>
+
+            <div class="w-20 text-right">
+                 <!-- Bo'sh joy -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- NATIJALAR OYNASI -->
+    <div id="result-screen" class="hidden fixed inset-0 bg-white z-50 flex flex-col items-center justify-center p-4 overflow-y-auto">
+        <div class="w-full max-w-4xl flex flex-col items-center py-8">
+            <div class="text-center mb-6 animate-bounce">
+                <i class="fas fa-trophy text-yellow-400 text-6xl drop-shadow-lg"></i>
+            </div>
+            <h2 class="text-4xl font-extrabold text-blue-900 mb-2">O'yin Yakunlandi!</h2>
+            <p class="text-gray-500 mb-8">Barcha hududlar o'rganildi</p>
+            
+            <!-- O'zbekiston Umumiy Xaritasi (KATTALASHTIRILDI) -->
+            <div class="w-full h-96 mb-10 rounded-3xl shadow-2xl border-4 border-white overflow-hidden bg-blue-50 flex items-center justify-center p-4">
+                <img src="https://gadm.org/img/480/gadm/UZB/UZB_labs.png" class="w-full h-full object-contain hover:scale-110 transition-transform duration-700" alt="O'zbekiston Xaritasi">
+            </div>
+
+            <!-- Yakuniy Ballar -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mb-8">
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-blue-500 flex flex-col items-center justify-center">
+                    <span class="font-bold text-gray-500 mb-2">1-Jamoa</span>
+                    <span class="text-4xl font-black text-blue-600" id="score-1">0</span>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-red-500 flex flex-col items-center justify-center">
+                    <span class="font-bold text-gray-500 mb-2">2-Jamoa</span>
+                    <span class="text-4xl font-black text-red-600" id="score-2">0</span>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-yellow-500 flex flex-col items-center justify-center">
+                    <span class="font-bold text-gray-500 mb-2">3-Jamoa</span>
+                    <span class="text-4xl font-black text-yellow-600" id="score-3">0</span>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-green-500 flex flex-col items-center justify-center">
+                    <span class="font-bold text-gray-500 mb-2">4-Jamoa</span>
+                    <span class="text-4xl font-black text-green-600" id="score-4">0</span>
+                </div>
+            </div>
+
+            <button onclick="location.reload()" class="px-10 py-4 bg-gray-900 text-white rounded-2xl hover:bg-black transition font-bold shadow-2xl flex items-center gap-3 text-lg">
+                <i class="fas fa-redo-alt"></i> Qayta Boshlash
+            </button>
+        </div>
+    </div>
+
     <script>
-        // --- MA'LUMOTLAR ---
-        const scenarios = [
-            {
-                id: 1,
-                name: "1-JAMOA",
-                color: "bg-indigo-600",
-                question: "Samarqand viloyati Paxtachi tumanidagi 'Qarnab' qishlog'ini Navoiy viloyati Xatirchi tumani tarkibiga o'tkazish tashabbusi bilan kim chiqadi va yakuniy qarorni kim qabul qiladi?",
-                answer: "Tashabbus xalq deputatlari viloyat Kengashlari tomonidan ko'tariladi. Yakuniy qarorni O'zbekiston Respublikasi Oliy Majlisi Senati qabul qiladi.",
-                law: "Konstitutsiya 81-modda; 'Ma'muriy-hududiy tuzilish to'g'risida'gi qonun."
-            },
-            {
-                id: 2,
-                name: "2-JAMOA",
-                color: "bg-blue-600",
-                question: "Toshkent shahri tarkibida yangi 'Yangi O'zbekiston' tumanini tuzish uchun aholining roziligi shartmi? Agar shart bo'lsa, u qanday shaklda olinadi?",
-                answer: "Ha, shart. Tegishli hududda yashovchi fuqarolarning fikri hisobga olinadi, lekin bu referendum orqali emas, balki Kengashlar muhokamasi orqali amalga oshiriladi.",
-                law: "'Ma'muriy-hududiy tuzilish to'g'risida'gi qonun, 6-modda."
-            },
-            {
-                id: 3,
-                name: "3-JAMOA",
-                color: "bg-orange-600",
-                question: "Farg'ona viloyati hokimi o'z qarori bilan Quvasoy shahrini Farg'ona tumani tarkibiga qo'shib yubordi. Ushbu qaror qonuniymi? Tumanlarni tugatish tartibi qanday?",
-                answer: "Noqonuniy. Viloyat hokimi tuman/shaharlarni tugatish vakolatiga ega emas. Buni faqat Oliy Majlis Senati Vazirlar Mahkamasi taklifiga binoan amalga oshiradi.",
-                law: "Konstitutsiya, Mahalliy davlat hokimiyati to'g'risidagi qonun."
-            },
-            {
-                id: 5,
-                name: "5-JAMOA",
-                color: "bg-purple-600",
-                question: "Xorazm viloyatidagi 'Urganch' tumani nomini 'Jaloliddin Manguberdi' tumani deb o'zgartirish haqida qaror qabul qilish uchun qaysi organlar ruxsati kerak?",
-                answer: "Toponimik obyektlarga nom berish komissiyasi xulosasi, Viloyat Kengashi qarori va Oliy Majlis Senatining qarori talab etiladi.",
-                law: "'Geografik obyektlarning nomlari to'g'risida'gi qonun."
-            }
+        // MA'LUMOTLAR BAZASI
+        const regions = [
+            { name: "Andijon viloyati", image: "https://gadm.org/img/480/gadm/UZB/andijon/UZB_andijon.png" },
+            { name: "Buxoro viloyati", image: "https://gadm.org/img/480/gadm/UZB/bukhoro/UZB_bukhoro.png" },
+            { name: "Farg'ona viloyati", image: "https://gadm.org/img/480/gadm/UZB/ferghana/UZB_ferghana.png" },
+            { name: "Jizzax viloyati", image: "https://gadm.org/img/480/gadm/UZB/jizzakh/UZB_jizzakh.png" },
+            { name: "Xorazm viloyati", image: "https://gadm.org/img/480/gadm/UZB/khorezm/UZB_khorezm.png" },
+            { name: "Namangan viloyati", image: "https://gadm.org/img/480/gadm/UZB/namangan/UZB_namangan.png" },
+            { name: "Navoiy viloyati", image: "https://gadm.org/img/480/gadm/UZB/navoi/UZB_navoi.png" },
+            { name: "Qashqadaryo viloyati", image: "https://gadm.org/img/480/gadm/UZB/kashkadarya/UZB_kashkadarya.png" },
+            { name: "Qoraqalpog'iston Respublikasi", image: "https://gadm.org/img/480/gadm/UZB/karakalpakstan/UZB_karakalpakstan.png" },
+            { name: "Samarqand viloyati", image: "https://gadm.org/img/480/gadm/UZB/samarkand/UZB_samarkand.png" },
+            { name: "Sirdaryo viloyati", image: "https://gadm.org/img/480/gadm/UZB/sirdaryo/UZB_sirdaryo.png" },
+            { name: "Surxondaryo viloyati", image: "https://gadm.org/img/480/gadm/UZB/surkhandarya/UZB_surkhandarya.png" },
+            { name: "Toshkent viloyati", image: "https://gadm.org/img/480/gadm/UZB/tashkent/UZB_tashkent.png" },
+            { name: "Toshkent shahri", image: "https://gadm.org/img/480/gadm/UZB/tashkentcity/UZB_tashkentcity.png" }
         ];
 
-        // --- HOLAT (STATE) ---
-        let timeLeft = 180;
-        let isActive = false;
-        let isFinished = false;
-        let timerInterval = null;
+        // O'YIN STATE
+        let currentQuestionIndex = 0;
+        let activeTeam = 1;
+        let scores = { 1: 0, 2: 0, 3: 0, 4: 0 };
+        let turnQueue = []; 
 
-        // --- DASTURNI BOSHLASH ---
-        function init() {
-            renderCards();
-            updateTimerDisplay();
+        // Elementlar
+        const questionCounterEl = document.getElementById('question-counter');
+        const regionNameDisplayEl = document.getElementById('region-name-display');
+        const regionImageEl = document.getElementById('region-image');
+        const regionNameOverlayEl = document.getElementById('region-name-overlay');
+        const gameScreen = document.getElementById('game-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const showAnswerBtn = document.getElementById('show-answer-btn');
+
+        initGame();
+
+        function initGame() {
+            shuffleArray(regions);
+            currentQuestionIndex = 0;
+            updateQuestionUI();
+            setNextRandomTeam();
         }
 
-        // --- TIMER LOGIKASI ---
-        function toggleTimer() {
-            if (isActive) {
-                pauseTimer();
+        function setNextRandomTeam() {
+            if (turnQueue.length === 0) {
+                turnQueue = [1, 2, 3, 4];
+                shuffleArray(turnQueue);
+            }
+            const nextTeam = turnQueue.pop();
+            highlightTeam(nextTeam);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function highlightTeam(teamId) {
+            activeTeam = teamId;
+            document.querySelectorAll('.team-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById(`btn-${teamId}`);
+            if (activeBtn) activeBtn.classList.add('active');
+        }
+
+        function manualSelect(teamId) {
+            highlightTeam(teamId);
+        }
+
+        function showAnswer() {
+            const currentRegion = regions[currentQuestionIndex];
+            regionNameDisplayEl.innerText = currentRegion.name;
+            
+            // Faqat nomni ko'rsatish (overlay), rasm allaqachon ko'rinib turibdi
+            regionNameOverlayEl.classList.remove('hidden');
+            regionNameOverlayEl.classList.add('reveal-anim');
+            
+            showAnswerBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            showAnswerBtn.disabled = true;
+        }
+
+        function submitAnswer() {
+            scores[activeTeam] += 100;
+            nextQuestion();
+        }
+
+        function skipQuestion() {
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < regions.length) {
+                resetAnswerUI();
+                updateQuestionUI();
+                setNextRandomTeam(); 
             } else {
-                startTimer();
+                finishGame();
             }
         }
 
-        function startTimer() {
-            if (timeLeft <= 0) return;
-            isActive = true;
-            document.getElementById('iconPlay').classList.add('hidden');
-            document.getElementById('iconPause').classList.remove('hidden');
+        function resetAnswerUI() {
+            // Overlayni yashirish (nomni bekitish)
+            regionNameOverlayEl.classList.add('hidden');
+            regionNameOverlayEl.classList.remove('reveal-anim');
             
-            timerInterval = setInterval(() => {
-                if (timeLeft > 0) {
-                    timeLeft--;
-                    updateTimerDisplay();
-                } else {
-                    finishTimer();
-                }
-            }, 1000);
+            // Tugmani qayta yoqish
+            showAnswerBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            showAnswerBtn.disabled = false;
         }
 
-        function pauseTimer() {
-            isActive = false;
-            clearInterval(timerInterval);
-            document.getElementById('iconPlay').classList.remove('hidden');
-            document.getElementById('iconPause').classList.add('hidden');
-        }
-
-        function finishTimer() {
-            pauseTimer();
-            timeLeft = 0;
-            isFinished = true;
-            updateTimerDisplay();
-            updateCardsToFinishedState();
-        }
-
-        function finishEarly() {
-            if (isFinished) return;
-            finishTimer();
-        }
-
-        function adjustTime(seconds) {
-            if (isActive) return; // Vaqt ketayotganda o'zgartirib bo'lmaydi
-            timeLeft += seconds;
-            if (timeLeft < 0) timeLeft = 0;
-            isFinished = false;
-            updateTimerDisplay();
-            // Kartalarni qayta boshlang'ich holatga keltirish agar vaqt qo'shilsa
-            if (timeLeft > 0) {
-                renderCards(); // Reset UI visually to "Tahlil qilinmoqda"
-            }
-        }
-
-        function resetApp() {
-            pauseTimer();
-            timeLeft = 180;
-            isFinished = false;
-            updateTimerDisplay();
-            renderCards();
-        }
-
-        function updateTimerDisplay() {
-            const mins = Math.floor(timeLeft / 60);
-            const secs = timeLeft % 60;
-            const display = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-            const timerEl = document.getElementById('timerDisplay');
+        function updateQuestionUI() {
+            questionCounterEl.innerText = currentQuestionIndex + 1;
             
-            timerEl.textContent = display;
-
-            if (timeLeft === 0) {
-                timerEl.classList.remove('text-blue-400');
-                timerEl.classList.add('text-red-600', 'timer-danger');
-                timerEl.textContent = "00:00";
-            } else if (timeLeft < 30) {
-                timerEl.classList.remove('text-blue-400');
-                timerEl.classList.add('text-red-500', 'timer-danger');
-            } else {
-                timerEl.classList.remove('text-red-500', 'text-red-600', 'timer-danger');
-                timerEl.classList.add('text-blue-400');
-            }
+            // Yangi rasmni darhol yuklash
+            const currentRegion = regions[currentQuestionIndex];
+            regionImageEl.src = currentRegion.image;
         }
 
-        // --- KARTALARNI CHIZISH ---
-        function renderCards() {
-            const container = document.getElementById('cardsContainer');
-            container.innerHTML = '';
+        function finishGame() {
+            gameScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            resultScreen.classList.add('flex');
 
-            scenarios.forEach(item => {
-                const card = document.createElement('div');
-                card.className = "flex flex-col h-full bg-slate-800 border-2 border-slate-600 rounded-xl overflow-hidden card-transition";
-                card.id = `card-${item.id}`;
-
-                card.innerHTML = `
-                    <div class="p-4 text-center font-black text-2xl uppercase tracking-widest text-white ${item.color}">
-                        ${item.name}
-                    </div>
-                    <div class="flex-1 p-6 flex flex-col justify-center relative">
-                        <!-- SAVOL -->
-                        <div id="question-${item.id}" class="space-y-4">
-                            <h3 class="text-xl text-yellow-400 font-bold border-b border-slate-600 pb-2 flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                                KAZUS №${item.id}
-                            </h3>
-                            <p class="text-xl leading-relaxed text-white font-medium">
-                                ${item.question}
-                            </p>
-                        </div>
-
-                        <!-- JAVOB (Boshida yashirin) -->
-                        <div id="answer-${item.id}" class="hidden space-y-4 answer-box">
-                            <h3 class="text-xl text-green-400 font-bold border-b border-green-900 pb-2 flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                TO'G'RI JAVOB:
-                            </h3>
-                            <p class="text-lg leading-relaxed text-slate-200">
-                                ${item.answer}
-                            </p>
-                            <div class="mt-2 text-sm text-slate-400 font-mono bg-slate-900 p-2 rounded border border-slate-700">
-                                <strong>ASOS:</strong> ${item.law}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- PASTKI QISM (Footer) -->
-                    <div id="footer-${item.id}" class="bg-slate-900 p-3 flex justify-between items-center border-t border-slate-700 min-h-[70px]">
-                        <span class="text-slate-400 text-sm font-bold">HOLAT:</span>
-                        <span class="text-yellow-500 font-bold animate-pulse flex items-center gap-2">
-                            <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            TAHLIL QILINMOQDA...
-                        </span>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
+            document.getElementById('score-1').innerText = scores[1];
+            document.getElementById('score-2').innerText = scores[2];
+            document.getElementById('score-3').innerText = scores[3];
+            document.getElementById('score-4').innerText = scores[4];
         }
-
-        // --- VAQT TUGAGANDAGI O'ZGARISH ---
-        function updateCardsToFinishedState() {
-            scenarios.forEach(item => {
-                const footer = document.getElementById(`footer-${item.id}`);
-                footer.innerHTML = `
-                    <span class="text-red-500 text-sm font-bold animate-pulse">VAQT TUGADI</span>
-                    <button onclick="revealAnswer(${item.id})" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-6 rounded-full shadow-lg transform transition active:scale-95 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                        JAVOBNI KO'RISH
-                    </button>
-                `;
-            });
-        }
-
-        // --- JAVOBNI OCHISH ---
-        function revealAnswer(id) {
-            const questionEl = document.getElementById(`question-${id}`);
-            const answerEl = document.getElementById(`answer-${id}`);
-            const cardEl = document.getElementById(`card-${id}`);
-            const footerEl = document.getElementById(`footer-${id}`);
-
-            // Animatsiya bilan almashtirish
-            questionEl.classList.add('hidden');
-            answerEl.classList.remove('hidden');
-            
-            // Karta uslubini o'zgartirish (yashil chegara)
-            cardEl.classList.remove('border-slate-600');
-            cardEl.classList.add('border-green-500');
-
-            // Tugmani o'zgartirish (ixtiyoriy, agar kerak bo'lsa)
-            footerEl.querySelector('button').classList.add('bg-slate-700', 'text-slate-300');
-            footerEl.querySelector('button').innerHTML = `
-                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                 OCHILDI
-            `;
-        }
-
-        // Ilovani ishga tushirish
-        init();
-
     </script>
 </body>
 </html>
