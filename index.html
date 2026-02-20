@@ -3,541 +3,1101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ma'muriy-Hududiy Tuzilish Masalalari</title>
+    <title>Ilmi Tolib OS | O'quv Tizimi</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #1f2937; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .dark-mode { background-color: #111827; color: #f9fafb; }
+        .dark-mode .glass-panel { background: rgba(31, 41, 55, 0.95); border: 1px solid rgba(55, 65, 81, 0.5); }
+        .dark-mode input, .dark-mode textarea { background-color: #374151; color: #fff; border-color: #4b5563; }
         
-        body { font-family: 'Inter', sans-serif; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark-mode ::-webkit-scrollbar-thumb { background: #4b5563; }
 
-        .glass {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        /* Streak Graph */
+        .streak-grid { display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-flow: column; gap: 4px; overflow-x: auto; padding-bottom: 10px;}
+        .streak-cell { width: 14px; height: 14px; background-color: #e5e7eb; border-radius: 2px; }
+        .dark-mode .streak-cell { background-color: #374151; }
+        .streak-cell.level-1 { background-color: #dcfce7; }
+        .streak-cell.level-2 { background-color: #86efac; }
+        .streak-cell.level-3 { background-color: #22c55e; }
+        .streak-cell.level-4 { background-color: #16a34a; }
 
-        .card-enter { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
-        .answer-reveal { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        /* Flashcard flip animation */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; transition: transform 0.6s; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
         
-        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
-        @keyframes popIn { 
-            0% { opacity: 0; transform: scale(0.95); } 
-            100% { opacity: 1; transform: scale(1); } 
-        }
-        @keyframes pulse-critical {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
-        }
-
-        .timer-critical { 
-            color: #ef4444; 
-            animation: pulse-critical 1.5s infinite;
-            text-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
-        }
-
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-
-        #confetti-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 50;
-        }
-
-        /* Login Screen Overlay */
-        #loginOverlay {
-            position: fixed;
-            inset: 0;
-            background: #0B1120;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
+        /* Toast messages */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 50; display: flex; flex-direction: column; gap: 10px; }
+        .toast { padding: 12px 20px; border-radius: 8px; color: white; font-weight: 500; animation: slideIn 0.3s ease-out; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .toast.success { background-color: #10b981; }
+        .toast.error { background-color: #ef4444; }
+        .toast.info { background-color: #3b82f6; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
-<body class="bg-[#0B1120] text-slate-100 min-h-screen flex flex-col relative overflow-y-auto overflow-x-hidden selection:bg-blue-500 selection:text-white">
+<body class="flex h-screen overflow-hidden transition-colors duration-300">
 
-    <!-- LOGIN SCREEN -->
-    <div id="loginOverlay">
-        <div class="glass p-8 md:p-12 rounded-2xl shadow-2xl border border-slate-700 max-w-md w-full mx-4 text-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            <h2 class="text-2xl font-black mb-2 text-white tracking-widest uppercase">Tizimga Kirish</h2>
-            <p class="text-slate-400 mb-8 text-sm"></p>
+    <!-- Sidebar -->
+    <aside class="w-64 glass-panel border-r shadow-lg flex flex-col justify-between z-20 transition-colors duration-300 relative">
+        <div>
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h1 class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+                    <i class="fas fa-brain"></i> Ilmi Tolib
+                </h1>
+                <p class="text-sm text-gray-500 mt-1 dark:text-gray-400">Shaxsiy OS</p>
+            </div>
             
-            <input type="password" id="passwordInput" placeholder="Parolni kiriting..." 
-                   class="w-full bg-slate-900 border border-slate-700 text-white px-4 py-4 rounded-xl mb-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-center text-lg tracking-widest"
-                   onkeypress="if(event.key === 'Enter') checkPassword()">
-            
-            <button onclick="checkPassword()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg active:scale-95 uppercase tracking-widest">
-                Kirish
-            </button>
-            <p id="loginError" class="text-red-500 mt-4 text-sm font-medium hidden">Parol noto'g'ri!</p>
+            <nav class="p-4 space-y-2">
+                <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-medium transition-all">
+                    <i class="fas fa-chart-pie w-5"></i> Boshqaruv Paneli
+                </button>
+                <button onclick="navigate('tasks')" id="nav-tasks" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-all">
+                    <i class="fas fa-tasks w-5"></i> Vazifalar
+                </button>
+                <button onclick="navigate('spaced')" id="nav-spaced" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-all">
+                    <i class="fas fa-layer-group w-5"></i> Spaced Repetition
+                </button>
+                <button onclick="navigate('challenges')" id="nav-challenges" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-all">
+                    <i class="fas fa-fire w-5"></i> Chaqiriqlar
+                </button>
+                <button onclick="navigate('pomodoro')" id="nav-pomodoro" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-all">
+                    <i class="fas fa-stopwatch w-5"></i> Fokus Taymeri
+                </button>
+                <button onclick="navigate('ai-exam')" id="nav-ai-exam" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-all">
+                    <i class="fas fa-robot w-5"></i> AI Imtihonchi
+                </button>
+                <button onclick="navigate('library')" id="nav-library" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-all">
+                    <i class="fas fa-book w-5"></i> Kutubxona
+                </button>
+            </nav>
         </div>
-    </div>
 
-    <!-- MAIN APP (Hidden initially) -->
-    <div id="mainApp" class="hidden flex-col min-h-screen">
-        <canvas id="confetti-canvas"></canvas>
+        <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm font-semibold">Daraja: <span id="user-level" class="text-indigo-600 dark:text-indigo-400">1</span></span>
+                    <span class="text-xs text-gray-500"><span id="user-xp">0</span> XP</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                    <div id="xp-bar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+            <button onclick="toggleDarkMode()" class="w-full py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-sm flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                <i class="fas fa-moon"></i> Rejimni o'zgartirish
+            </button>
+        </div>
+    </aside>
 
-        <!-- HEADER -->
-        <header class="sticky top-0 z-40 glass border-b border-slate-800 shadow-2xl transition-all duration-300">
-            <div class="max-w-7xl mx-auto px-4 py-3 md:px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-                
-                <div class="flex items-center gap-4 w-full md:w-auto">
-                    <div class="relative bg-slate-900 p-2.5 rounded-lg border border-slate-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 class="text-lg md:text-xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 uppercase">MA'MURIY-HUDUDIY TUZILISH MASALALARI</h1>
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-8 relative" id="main-content">
+        
+        <!-- Dashboard View -->
+        <section id="view-dashboard" class="view-section fade-in block">
+            <h2 class="text-3xl font-bold mb-6">Xush kelibsiz, Tolib! 🚀</h2>
+            
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="glass-panel p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Bugungi vazifalar</p>
+                            <h3 class="text-2xl font-bold" id="stat-tasks">0/0</h3>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Timer & Controls -->
-                <div class="flex items-center gap-3 w-full md:w-auto justify-between bg-slate-800/50 p-1.5 rounded-2xl border border-slate-700/50 backdrop-blur-md">
-                    
-                    <div class="flex flex-col gap-0.5 px-1">
-                        <button onclick="soundManager.click(); adjustTime(60)" class="text-[10px] font-bold text-green-400 hover:bg-slate-700/50 px-2 py-0.5 rounded transition">+1 MIN</button>
-                        <button onclick="soundManager.click(); adjustTime(-60)" class="text-[10px] font-bold text-red-400 hover:bg-slate-700/50 px-2 py-0.5 rounded transition">-1 MIN</button>
+                <div class="glass-panel p-6 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition" onclick="navigate('spaced')">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xl">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Takrorlanishi kerak</p>
+                            <h3 class="text-2xl font-bold text-red-600" id="stat-cards">0</h3>
+                        </div>
                     </div>
-
-                    <div id="timerDisplay" class="text-4xl md:text-5xl font-black font-mono tracking-tighter text-white px-4 min-w-[140px] text-center" style="font-variant-numeric: tabular-nums;">
-                        03:00
-                    </div>
-
-                    <div class="flex gap-1 pr-1">
-                        <button id="btnStart" onclick="toggleTimer()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg active:scale-95 transition-all">
-                            <svg id="iconPlay" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                            <svg id="iconPause" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                        </button>
-                        
-                        <button onclick="soundManager.error(); finishEarly()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-700 hover:bg-red-600 hover:text-white text-slate-300 transition-all active:scale-95" title="Tugatish">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-                            </svg>
-                        </button>
-
-                        <button onclick="soundManager.click(); resetApp()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 transition-all active:scale-95" title="Qayta yuklash">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                        </button>
-
-                        <button onclick="toggleFullScreen()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 transition-all active:scale-95" title="To'liq ekran">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                            </svg>
-                        </button>
+                </div>
+                <div class="glass-panel p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xl">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Chuqur diqqat (Bugun)</p>
+                            <h3 class="text-2xl font-bold" id="stat-deepwork">0 daq</h3>
+                        </div>
                     </div>
                 </div>
             </div>
-        </header>
 
-        <!-- MAIN GRID -->
-        <main id="cardsContainer" class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 p-4 md:p-6 max-w-[1400px] mx-auto w-full pb-20">
-            <!-- Cards rendered by JS -->
-        </main>
+            <!-- GitHub Style Streak -->
+            <div class="glass-panel p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
+                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-calendar-alt text-indigo-500"></i> O'rganish Uzluksizligi (Streak)
+                </h3>
+                <div class="streak-grid" id="streak-grid">
+                    <!-- JS will populate this -->
+                </div>
+                <div class="mt-4 text-sm text-gray-500 flex justify-between items-center">
+                    <span>Maksimal streak: <b id="max-streak" class="text-indigo-600 dark:text-indigo-400">0</b> kun</span>
+                    <div class="flex items-center gap-2">
+                        <span>Kam</span>
+                        <div class="w-3 h-3 rounded-sm bg-gray-200 dark:bg-gray-700"></div>
+                        <div class="w-3 h-3 rounded-sm bg-green-200"></div>
+                        <div class="w-3 h-3 rounded-sm bg-green-400"></div>
+                        <div class="w-3 h-3 rounded-sm bg-green-600"></div>
+                        <span>Ko'p</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tasks View -->
+        <section id="view-tasks" class="view-section fade-in hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold">Vazifalar Paneli</h2>
+                <div class="flex gap-2">
+                    <input type="text" id="new-task-input" placeholder="Yangi vazifa qo'shish..." class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64 dark:bg-gray-800 dark:border-gray-700">
+                    <button onclick="addTask()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition">Qo'shish</button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Bajarilmoqda -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-yellow-600"><i class="fas fa-circle-notch fa-spin text-sm"></i> Bajarilmoqda</h3>
+                    <div id="todo-list" class="space-y-3 min-h-[200px]">
+                        <!-- Tasks go here -->
+                    </div>
+                </div>
+                <!-- Bajarildi -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-green-600"><i class="fas fa-check-circle text-sm"></i> Bajarildi</h3>
+                    <div id="done-list" class="space-y-3 min-h-[200px] opacity-70">
+                        <!-- Tasks go here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Spaced Repetition View -->
+        <section id="view-spaced" class="view-section fade-in hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold">Spaced Repetition</h2>
+                <div class="flex gap-2">
+                    <button onclick="showModal('ai-card-modal')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2">
+                        <i class="fas fa-magic"></i> AI Karta Yaratish
+                    </button>
+                    <button onclick="showModal('manual-card-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-plus"></i> Qo'lda Qo'shish
+                    </button>
+                </div>
+            </div>
+
+            <!-- Review Area (Visible if there are cards to review) -->
+            <div id="review-area" class="max-w-2xl mx-auto mt-12 hidden">
+                <div class="text-center mb-4 text-sm font-semibold text-gray-500">Takrorlanishi kerak: <span id="review-count" class="text-red-500 text-lg">0</span> ta karta</div>
+                
+                <div class="perspective-1000 w-full h-64 mb-6 cursor-pointer" onclick="flipCard()">
+                    <div id="flashcard-inner" class="relative w-full h-full transform-style-3d shadow-xl rounded-2xl">
+                        <!-- Front -->
+                        <div class="absolute w-full h-full backface-hidden bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center p-8 border-2 border-indigo-100 dark:border-gray-700">
+                            <h3 class="text-2xl font-bold text-center" id="card-front">Mavzu savoli bu yerda</h3>
+                            <div class="absolute bottom-4 text-xs text-gray-400">Javobni ko'rish uchun bosing</div>
+                        </div>
+                        <!-- Back -->
+                        <div class="absolute w-full h-full backface-hidden rotate-y-180 bg-indigo-50 dark:bg-indigo-900 rounded-2xl flex items-center justify-center p-8 border-2 border-indigo-200">
+                            <p class="text-xl text-center" id="card-back">Javob matni bu yerda chiqadi.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="review-buttons" class="grid grid-cols-4 gap-4 hidden">
+                    <button onclick="rateCard(1)" class="py-3 rounded-lg bg-red-100 text-red-700 font-bold hover:bg-red-200 transition">Qiyin / Xato (1 kun)</button>
+                    <button onclick="rateCard(3)" class="py-3 rounded-lg bg-orange-100 text-orange-700 font-bold hover:bg-orange-200 transition">Qiyinroq</button>
+                    <button onclick="rateCard(4)" class="py-3 rounded-lg bg-green-100 text-green-700 font-bold hover:bg-green-200 transition">Yaxshi</button>
+                    <button onclick="rateCard(5)" class="py-3 rounded-lg bg-blue-100 text-blue-700 font-bold hover:bg-blue-200 transition">Juda Oson</button>
+                </div>
+            </div>
+
+            <!-- All Cards List (Visible if nothing to review) -->
+            <div id="all-cards-area" class="glass-panel p-6 rounded-2xl mt-8">
+                <h3 class="text-lg font-bold mb-4">Barcha Kartalar (<span id="total-cards-count">0</span>)</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b dark:border-gray-700 text-gray-500">
+                                <th class="p-3">Savol</th>
+                                <th class="p-3">Interval (kun)</th>
+                                <th class="p-3">Keyingi takrorlash</th>
+                                <th class="p-3">Harakat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cards-table-body">
+                            <!-- JS populates -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Challenges View -->
+        <section id="view-challenges" class="view-section fade-in hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold">O'quv Chaqiriqlari (Challenges)</h2>
+                <button onclick="generateAIChallenge()" class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-4 py-2 rounded-lg transition flex items-center gap-2 shadow-lg" id="btn-gen-challenge">
+                    <i class="fas fa-fire"></i> AI Yangi Chaqiriq
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="challenges-grid">
+                <!-- JS Populates -->
+            </div>
+        </section>
+
+        <!-- Pomodoro View -->
+        <section id="view-pomodoro" class="view-section fade-in hidden">
+            <h2 class="text-3xl font-bold mb-6 text-center">Fokus Taymeri</h2>
+            <div class="max-w-md mx-auto glass-panel p-10 rounded-3xl text-center shadow-lg border-2 border-indigo-100 dark:border-gray-700">
+                <div class="flex justify-center gap-4 mb-8">
+                    <button onclick="setTimerMode('work')" id="mode-work" class="px-4 py-2 rounded-full bg-indigo-600 text-white font-medium">Fokus (25 min)</button>
+                    <button onclick="setTimerMode('break')" id="mode-break" class="px-4 py-2 rounded-full bg-transparent text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium">Tanaffus (5 min)</button>
+                </div>
+                
+                <div class="text-7xl font-bold mb-8 text-gray-800 dark:text-gray-100" id="timer-display">25:00</div>
+                
+                <div class="flex justify-center gap-4">
+                    <button onclick="startTimer()" id="btn-start-timer" class="w-16 h-16 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center text-2xl shadow-lg transition transform hover:scale-105">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button onclick="pauseTimer()" class="w-16 h-16 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white flex items-center justify-center text-2xl shadow-lg transition transform hover:scale-105">
+                        <i class="fas fa-pause"></i>
+                    </button>
+                    <button onclick="resetTimer()" class="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center text-2xl shadow-lg transition transform hover:scale-105">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                </div>
+                <p class="mt-6 text-sm text-gray-500">Bugungi chuqur diqqat: <b class="text-indigo-600" id="pomodoro-today-stats">0 min</b></p>
+            </div>
+        </section>
+
+        <!-- AI Examiner View -->
+        <section id="view-ai-exam" class="view-section fade-in hidden">
+            <h2 class="text-3xl font-bold mb-6">AI Imtihonchi</h2>
+            <div class="max-w-3xl mx-auto glass-panel p-6 rounded-2xl flex flex-col h-[70vh]">
+                <div class="mb-4 flex gap-2">
+                    <input type="text" id="exam-topic" placeholder="Qaysi mavzuda imtihon topshirmoqchisiz?" class="flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700">
+                    <button onclick="startExam()" id="btn-start-exam" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition flex items-center gap-2">
+                        <i class="fas fa-play"></i> Boshlash
+                    </button>
+                </div>
+                
+                <div id="exam-chat" class="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900 rounded-lg mb-4 space-y-4 border border-gray-200 dark:border-gray-700">
+                    <div class="text-center text-gray-500 mt-10">
+                        <i class="fas fa-robot text-4xl mb-3 text-indigo-300"></i>
+                        <p>Mavzuni kiriting va "Boshlash" tugmasini bosing.<br>AI sizga qiyin ochiq savol beradi.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <textarea id="exam-answer" rows="2" placeholder="Javobingizni bu yerga yozing..." class="flex-1 px-4 py-2 border rounded-lg resize-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700" disabled></textarea>
+                    <button onclick="submitAnswer()" id="btn-submit-answer" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2 opacity-50 cursor-not-allowed" disabled>
+                        <i class="fas fa-paper-plane"></i> Yuborish
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Library (Resource Hub) View -->
+        <section id="view-library" class="view-section fade-in hidden">
+            <h2 class="text-3xl font-bold mb-6">Kutubxona va AI Xulosa</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Input Area -->
+                <div class="glass-panel p-6 rounded-2xl lg:col-span-1 h-fit">
+                    <h3 class="text-lg font-bold mb-4">Yangi resurs</h3>
+                    <input type="text" id="res-title" placeholder="Sarlavha" class="w-full mb-3 px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700">
+                    <textarea id="res-content" rows="6" placeholder="Matn yoki havolani kiriting..." class="w-full mb-3 px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"></textarea>
+                    <button onclick="summarizeResource()" id="btn-summarize" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-magic"></i> AI Xulosa va Saqlash
+                    </button>
+                </div>
+                <!-- Resource List -->
+                <div class="lg:col-span-2 space-y-4" id="resource-list">
+                    <!-- JS Populates -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <!-- Modals -->
+    <!-- Manual Card Modal -->
+    <div id="manual-card-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl w-full max-w-md transform transition-all">
+            <h3 class="text-2xl font-bold mb-4">Qo'lda Karta Qo'shish</h3>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Savol (Front)</label>
+                <input type="text" id="manual-q" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
+            </div>
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-1">Javob (Back)</label>
+                <textarea id="manual-a" rows="3" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></textarea>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button onclick="hideModal('manual-card-modal')" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg">Bekor qilish</button>
+                <button onclick="addManualCard()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Saqlash</button>
+            </div>
+        </div>
     </div>
 
+    <!-- AI Card Modal -->
+    <div id="ai-card-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl w-full max-w-lg transform transition-all">
+            <h3 class="text-2xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-magic text-purple-500"></i> AI Fleshkartalar yozadi</h3>
+            <p class="text-sm text-gray-500 mb-4">Darslik yoki maqola matnini kiriting. Gemini AI undan eng muhim savol-javoblarni ajratib oladi.</p>
+            <textarea id="ai-source-text" rows="6" class="w-full px-4 py-2 border rounded-lg mb-6 dark:bg-gray-700 dark:border-gray-600" placeholder="Katta matnni bu yerga joylang..."></textarea>
+            <div class="flex justify-end gap-2">
+                <button onclick="hideModal('ai-card-modal')" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg">Bekor qilish</button>
+                <button onclick="generateAICards()" id="btn-gen-cards" class="px-4 py-2 bg-purple-600 text-white rounded-lg flex items-center gap-2">
+                    Yaratish <i class="fas fa-bolt"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
     <script>
-        // --- 0. LOGIN SYSTEM ---
-        function checkPassword() {
-            const input = document.getElementById('passwordInput').value;
-            const errorEl = document.getElementById('loginError');
+        // --- System Constants & Global Variables ---
+        const apiKey = "AIzaSyBXh0iGXhxWG_nlOZMczak8P3Xjf1rcfGo"; // Environment injects this based on instructions. Do not add UI for it.
+        const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        
+        const DEFAULT_CHALLENGES = [
+            { id: "c1", title: "Oshqozon to'q", desc: "Ertalabki nonushtani to'liq qiling.", xp: 15, done: false },
+            { id: "c2", title: "Kitobxon", desc: "Kitobdan 10 bet o'qing.", xp: 20, done: false },
+            { id: "c3", title: "Fokuslangan tolib", desc: "Bitta to'liq 25 daqiqalik pomodoro qiling.", xp: 25, done: false },
+            { id: "c4", title: "Miya mashqi", desc: "5 ta Spaced Repetition kartasini takrorlang.", xp: 20, done: false },
+            { id: "c5", title: "Suv ichish", desc: "Kun davomida 2 litr suv iching.", xp: 10, done: false },
+            { id: "c6", title: "Raqamli detoks", desc: "Yotishdan oldin 1 soat telefon ishlatmang.", xp: 30, done: false },
+            { id: "c7", title: "Yangi so'zlar", desc: "Chet tilidan 5 ta yangi so'z o'rganing.", xp: 25, done: false },
+            { id: "c8", title: "Sog'lom tana", desc: "15 daqiqa jismoniy mashq qiling.", xp: 20, done: false },
+            { id: "c9", title: "Reja tuzish", desc: "Ertangi kun uchun 3 ta asosiy vazifa yozing.", xp: 15, done: false },
+            { id: "c10", title: "Texnik ustoz", desc: "Biror narsani do'stingizga yoki AI ga tushuntirib bering.", xp: 40, done: false }
+        ];
+
+        let state = {
+            xp: 0,
+            tasks: [],
+            cards: [],
+            challenges: [],
+            resources: [],
+            streakDates: [], // Array of "YYYY-MM-DD"
+            deepWorkToday: 0, // In minutes
+            lastLogin: "",
+            darkMode: false
+        };
+
+        // --- Utility Functions ---
+        function getTodayStr() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = msg;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3000);
+        }
+
+        function calculateLevel() {
+            return Math.floor(state.xp / 500) + 1;
+        }
+
+        function updateStreak() {
+            const today = getTodayStr();
+            if (state.lastLogin !== today) {
+                // Check if streak broke
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
+                
+                if (!state.streakDates.includes(today)) {
+                    state.streakDates.push(today);
+                }
+                
+                // Reset daily stuff if new day
+                if (state.lastLogin !== "") {
+                    state.deepWorkToday = 0;
+                    state.challenges.forEach(c => c.done = false); // Reset challenges
+                }
+                state.lastLogin = today;
+                saveData();
+            }
+        }
+
+        function addXP(amount) {
+            const oldLevel = calculateLevel();
+            state.xp += amount;
+            const newLevel = calculateLevel();
+            if (newLevel > oldLevel) {
+                showToast(`Tabriklaymiz! Siz ${newLevel}-darajaga yetdingiz! 🎉`, 'success');
+            }
+            saveData();
+            updateSidebarStats();
+        }
+
+        // --- Data Persistence ---
+        function loadData() {
+            const saved = localStorage.getItem('ilmiTolibData');
+            if (saved) {
+                state = { ...state, ...JSON.parse(saved) };
+            }
+            // Initialize challenges if empty
+            if (!state.challenges || state.challenges.length === 0) {
+                state.challenges = JSON.parse(JSON.stringify(DEFAULT_CHALLENGES));
+            }
             
-            if (input === '.Rustamov.007') {
-                document.getElementById('loginOverlay').style.display = 'none';
-                document.getElementById('mainApp').classList.remove('hidden');
-                document.getElementById('mainApp').classList.add('flex');
-                init(); // Start app only after login
-            } else {
-                errorEl.classList.remove('hidden');
-                document.getElementById('passwordInput').value = '';
-                document.getElementById('passwordInput').focus();
+            if (state.darkMode) {
+                document.body.classList.add('dark-mode');
             }
+            
+            updateStreak();
+            updateSidebarStats();
+            renderAll();
         }
 
-        // --- 1. PROFESSIONAL OVOZ TIZIMI (AudioContext) ---
-        const soundManager = {
-            ctx: null,
-            init: function() {
-                if (!this.ctx) {
-                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (this.ctx.state === 'suspended') {
-                    this.ctx.resume();
-                }
-            },
-            playTone: function(freq, type, duration, vol = 0.1) {
-                if (!this.ctx) this.init();
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + duration);
-            },
-            click: function() { this.playTone(800, 'sine', 0.1, 0.05); },
-            tick: function() { this.playTone(1000, 'square', 0.05, 0.03); },
-            warning: function() { this.playTone(600, 'sawtooth', 0.1, 0.05); },
-            alarm: function() {
-                if (!this.ctx) this.init();
-                const now = this.ctx.currentTime;
-                [440, 330, 440, 330].forEach((f, i) => {
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = 'triangle';
-                    osc.frequency.value = f;
-                    gain.gain.setValueAtTime(0.2, now + i * 0.2);
-                    gain.gain.linearRampToValueAtTime(0, now + i * 0.2 + 0.15);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start(now + i * 0.2);
-                    osc.stop(now + i * 0.2 + 0.2);
-                });
-            },
-            success: function() {
-                if (!this.ctx) this.init();
-                const now = this.ctx.currentTime;
-                [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.value = f;
-                    gain.gain.setValueAtTime(0.1, now + i * 0.1);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.4);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start(now + i * 0.1);
-                    osc.stop(now + i * 0.1 + 0.5);
-                });
-            },
-            error: function() { this.playTone(150, 'sawtooth', 0.3, 0.2); }
-        };
+        function saveData() {
+            localStorage.setItem('ilmiTolibData', JSON.stringify(state));
+        }
 
-        // --- 2. KONFETTI TIZIMI ---
-        const confetti = {
-            canvas: document.getElementById('confetti-canvas'),
-            ctx: document.getElementById('confetti-canvas').getContext('2d'),
-            particles: [],
-            isActive: false,
-            init: function() {
-                this.resize();
-                window.addEventListener('resize', () => this.resize());
-            },
-            resize: function() {
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight;
-            },
-            spawn: function(x, y) {
-                for(let i=0; i<50; i++) {
-                    this.particles.push({
-                        x: x, y: y,
-                        vx: (Math.random() - 0.5) * 10,
-                        vy: (Math.random() - 1) * 15,
-                        color: `hsl(${Math.random()*360}, 100%, 50%)`,
-                        size: Math.random() * 8 + 4,
-                        life: 100
+        // --- UI Navigation & Modes ---
+        function navigate(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('bg-indigo-50', 'dark:bg-indigo-900/30', 'text-indigo-600', 'dark:text-indigo-400', 'font-medium');
+                el.classList.add('text-gray-600', 'dark:text-gray-300');
+            });
+            
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`nav-${viewId}`);
+            activeBtn.classList.remove('text-gray-600', 'dark:text-gray-300');
+            activeBtn.classList.add('bg-indigo-50', 'dark:bg-indigo-900/30', 'text-indigo-600', 'dark:text-indigo-400', 'font-medium');
+
+            if(viewId === 'dashboard') renderDashboard();
+            if(viewId === 'spaced') checkReviewCards();
+        }
+
+        function toggleDarkMode() {
+            state.darkMode = !state.darkMode;
+            document.body.classList.toggle('dark-mode');
+            saveData();
+        }
+
+        function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function hideModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // --- API & AI Integration ---
+        async function fetchGeminiWithRetry(prompt, systemInstruction, expectsJson = false, retries = 5) {
+            if (!apiKey) {
+                showToast("API Kalit kiritilmagan (Muhitda yo'q).", "error");
+                return null;
+            }
+
+            let payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] }
+            };
+
+            if (expectsJson) {
+                payload.generationConfig = {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            cards: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        q: { type: "STRING" },
+                                        a: { type: "STRING" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+            }
+
+            let delays = [1000, 2000, 4000, 8000, 16000];
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const res = await fetch(GEMINI_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
                     });
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    const data = await res.json();
+                    return data.candidates[0].content.parts[0].text;
+                } catch (error) {
+                    console.error(`Attempt ${i+1} failed`, error);
+                    if (i === retries - 1) {
+                        showToast("AI xizmatiga ulanishda xatolik yuz berdi.", "error");
+                        return null;
+                    }
+                    await new Promise(r => setTimeout(r, delays[i]));
                 }
-                if (!this.isActive) {
-                    this.isActive = true;
-                    this.loop();
-                }
-            },
-            loop: function() {
-                if (this.particles.length === 0) {
-                    this.isActive = false;
-                    this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
-                    return;
-                }
-                this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
-                for(let i=this.particles.length-1; i>=0; i--) {
-                    let p = this.particles[i];
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    p.vy += 0.5;
-                    p.life--;
-                    p.size *= 0.95;
-                    this.ctx.fillStyle = p.color;
-                    this.ctx.beginPath();
-                    this.ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-                    this.ctx.fill();
-                    if(p.life <= 0) this.particles.splice(i, 1);
-                }
-                requestAnimationFrame(() => this.loop());
             }
-        };
-        confetti.init();
-
-        // --- 3. MA'LUMOTLAR BAZASI (MAXSUS 4 TA KAZUS) ---
-        const questionPool = [
-            {
-                question: "Viloyat hokimi aholisi 25 000 kishi bo'lgan yirik va istiqbolli qishloqni to'g'ridan-to'g'ri 'viloyat bo'ysunuvidagi shahar' toifasiga o'tkazish bo'yicha qaror qabul qilib, iltimosnomani O'zbekiston Respublikasi Vazirlar Mahkamasiga yubordi. Viloyat hokimligi tomonidan tuzilgan maxsus komissiya o'zining ichki bayonnomasi bilan xulosa berish muddatini 40 kunga uzaytirdi. Vazirlar Mahkamasi iltimosnomani ko'rib chiqib, o'z apparati xodimlari orqali yangi shaharning kartografik chizmalarini tayyorlatdi va hujjatlarni Oliy Majlisga yubordi.",
-                errorsList: [
-                    { pts: "15", text: "Qishloq aholisining soni viloyat bo'ysunuvidagi shahar toifasi uchun yetarli emas." },
-                    { pts: "20", text: "Maxsus komissiya xulosa berish muddatini mustaqil uzaytirishi va u 1 oydan oshishi." },
-                    { pts: "25", text: "Viloyat hokimining 'qaror qabul qilishi' (Kengash qarori kerak)." },
-                    { pts: "30", text: "Kartografik chizmalarning Vazirlar Mahkamasi tomonidan tayyorlanishi (Kadastr vakolati)." }
-                ],
-                law: "Ma'muriy-hududiy tuzilish to'g'rsidagi: 3, 11, 14, 34-moddalar."
-            },
-            {
-                question: "Qoraqalpog'iston Respublikasi Vazirlar Kengashi hududda yangi tuman tuzish bo'yicha taklif tayyorlab, tasdiqlash uchun to'g'ridan-to'g'ri Oliy Majlisga yubordi. Oliy Majlis 30 kun ichida uzil-kesil qarorni qabul qildi. Qaror chiqqanidan so'ng, yangi tumanda saylov okruglarini o'zgartirish masalasi ko'rib chiqildi va Vazirlar Kengashi 15 ish kuni ichida ma'lumotlarni Davlat reyestriga kiritish uchun Kadastr agentligiga taqdim etdi.",
-                errorsList: [
-                    { pts: "15", text: "Hujjatlarni to'g'ridan-to'g'ri Oliy Majlisga yuborish (Jo'qorg'i Kengesga emas)." },
-                    { pts: "20", text: "Oliy Majlisning yakuniy qaror qabul qilishi (u faqat rozilik beradi)." },
-                    { pts: "25", text: "Davlat reyestriga kiritish muddatining buzilishi (uzog'i 10 kun)." },
-                    { pts: "30", text: "Saylov okruglari masalasini Oliy Majlis qarori chiqqanidan keyin hal qilinishi." }
-                ],
-                law: "Ma'muriy-hududiy tuzilish to'g'rsidagi: 15, 19, 40-1-moddalar."
-            },
-            {
-                question: "Tuman hokimi aholisi 1800 kishi bo'lgan, sanoat korxonasi yo'q qishloqni 'shaharcha' toifasiga kiritish iltimosnomasini tayyorladi. Komissiya loyihaga salbiy xulosa bergan bo'lsa-da, hokim jarayonni bevosita xalq deputatlari tuman Kengashiga kiritdi. Tuman Kengashi ijobiy qaror qabul qilib, navbatchi xaritalarga tushirish uchun viloyat hokimligiga topshiriq berdi.",
-                errorsList: [
-                    { pts: "15", text: "Qishloqning aholi soni va infratuzilmasi shaharcha talablariga javob bermasligi." },
-                    { pts: "20", text: "Salbiy xulosa olingan loyihaning jarayonini davom ettirish." },
-                    { pts: "25", text: "Qishloqni shaharchaga o'tkazishni tuman Kengashi hal qilishi (viloyat Kengashi vakolati)." },
-                    { pts: "30", text: "Navbatchi xaritalarni yuritish viloyat hokimligiga topshirilishi." }
-                ],
-                law: "Ma'muriy-hududiy tuzilish to'g'rsidagi: 3, 11, 14, 38-moddalar."
-            },
-            {
-                question: "Tuman hokimi tuman markazini ko'chirish niyatida qarorni tezlashtirish uchun to'g'ridan-to'g'ri Vazirlar Mahkamasiga iltimosnoma kiritdi. Iltimosnomaga hokimlik tasdiqlagan chegaralar chizig'i ilova qilindi. Vazirlar Mahkamasi taklifni 45 kunda ma'qulladi. Tuman markazi ko'chirilgach, nizoli uchastkalarga aniqlik kiritish to'g'ridan-to'g'ri tuman hokimligiga topshirildi.",
-                errorsList: [
-                    { pts: "15", text: "Iltimosnoma noto'g'ri organga (Vazirlar Mahkamasiga) yuborilgani." },
-                    { pts: "20", text: "Chegaralar chizig'i hokimlik tomonidan tayyorlanib tasdiqlangani." },
-                    { pts: "25", text: "Davlat organining ko'rib chiqish muddatini buzishi (30 kun o'rniga 45 kun)." },
-                    { pts: "30", text: "Nizoli uchastkalarga aniqlik kiritish hokimlikka topshirilgani (Kadastr vakolati)." }
-                ],
-                law: "Ma'muriy-hududiy tuzilish to'g'risidagi: 11, 31-moddalar."
-            }
-        ];
-
-        const teamConfigs = [
-            { id: 1, name: "1-JAMOA", color: "indigo" },
-            { id: 2, name: "2-JAMOA", color: "blue" },
-            { id: 3, name: "3-JAMOA", color: "orange" },
-            { id: 5, name: "5-JAMOA", color: "purple" }
-        ];
-
-        // --- 4. DASTUR MANTIQI ---
-        let scenarios = [];
-        let timeLeft = 180;
-        let isActive = false;
-        let isFinished = false;
-        let timerInterval = null;
-
-        function shuffle(array) {
-            return array.sort(() => Math.random() - 0.5);
         }
 
-        function init() {
-            // Savollar har safar yuklanganda aralashadi
-            const selected = shuffle([...questionPool]);
-            scenarios = teamConfigs.map((team, i) => ({ ...team, ...selected[i] }));
-            renderCards();
+        // --- Specific Render Functions ---
+
+        function updateSidebarStats() {
+            document.getElementById('user-level').innerText = calculateLevel();
+            document.getElementById('user-xp').innerText = state.xp;
+            const progress = (state.xp % 500) / 500 * 100;
+            document.getElementById('xp-bar').style.width = `${progress}%`;
+        }
+
+        function renderDashboard() {
+            const todayStr = getTodayStr();
+            const pendingTasks = state.tasks.filter(t => !t.done).length;
+            const dueCards = state.cards.filter(c => c.nextDate <= todayStr).length;
+            
+            document.getElementById('stat-tasks').innerText = `${state.tasks.length - pendingTasks}/${state.tasks.length}`;
+            document.getElementById('stat-cards').innerText = dueCards;
+            document.getElementById('stat-deepwork').innerText = `${state.deepWorkToday} daq`;
+
+            // Draw Streak Graph (last 140 days approx 20 weeks x 7 days)
+            const grid = document.getElementById('streak-grid');
+            grid.innerHTML = '';
+            const today = new Date();
+            let maxStreak = 0;
+            let currentStreak = 0;
+
+            for (let i = 139; i >= 0; i--) {
+                let d = new Date();
+                d.setDate(today.getDate() - i);
+                let dStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                
+                let cell = document.createElement('div');
+                cell.className = 'streak-cell';
+                cell.title = dStr;
+
+                if (state.streakDates.includes(dStr)) {
+                    cell.classList.add('level-3'); // Basic green
+                    currentStreak++;
+                    if(currentStreak > maxStreak) maxStreak = currentStreak;
+                } else {
+                    currentStreak = 0;
+                }
+                grid.appendChild(cell);
+            }
+            document.getElementById('max-streak').innerText = maxStreak;
+        }
+
+        // --- Tasks Logic ---
+        function renderTasks() {
+            const todoList = document.getElementById('todo-list');
+            const doneList = document.getElementById('done-list');
+            todoList.innerHTML = ''; doneList.innerHTML = '';
+
+            state.tasks.forEach(t => {
+                const el = document.createElement('div');
+                el.className = 'flex items-center justify-between p-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm';
+                el.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask('${t.id}')" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                        <span class="${t.done ? 'line-through text-gray-400' : 'font-medium'}">${t.title}</span>
+                    </div>
+                    <button onclick="deleteTask('${t.id}')" class="text-red-400 hover:text-red-600 transition"><i class="fas fa-trash"></i></button>
+                `;
+                if (t.done) doneList.appendChild(el);
+                else todoList.appendChild(el);
+            });
+        }
+
+        function addTask() {
+            const input = document.getElementById('new-task-input');
+            if (!input.value.trim()) return;
+            state.tasks.push({ id: 't_'+Date.now(), title: input.value.trim(), done: false });
+            input.value = '';
+            addXP(2); // Small reward for planning
+            saveData();
+            renderTasks();
+            renderDashboard();
+        }
+
+        function toggleTask(id) {
+            const t = state.tasks.find(x => x.id === id);
+            if (t) {
+                t.done = !t.done;
+                if (t.done) {
+                    addXP(10);
+                    showToast("Vazifa bajarildi! +10 XP", "success");
+                    updateStreak();
+                }
+                saveData();
+                renderTasks();
+                renderDashboard();
+            }
+        }
+
+        function deleteTask(id) {
+            state.tasks = state.tasks.filter(x => x.id !== id);
+            saveData();
+            renderTasks();
+            renderDashboard();
+        }
+
+        // --- Spaced Repetition Logic (SM-2 Simplified) ---
+        let currentReviewCard = null;
+        
+        function renderCardsList() {
+            const tbody = document.getElementById('cards-table-body');
+            tbody.innerHTML = '';
+            document.getElementById('total-cards-count').innerText = state.cards.length;
+            
+            state.cards.forEach(c => {
+                tbody.innerHTML += `
+                    <tr class="border-b dark:border-gray-700">
+                        <td class="p-3 max-w-xs truncate" title="${c.q}">${c.q}</td>
+                        <td class="p-3">${c.interval}</td>
+                        <td class="p-3 ${c.nextDate <= getTodayStr() ? 'text-red-500 font-bold' : ''}">${c.nextDate}</td>
+                        <td class="p-3">
+                            <button onclick="deleteCard('${c.id}')" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deleteCard(id) {
+            state.cards = state.cards.filter(c => c.id !== id);
+            saveData();
+            renderCardsList();
+            checkReviewCards();
+        }
+
+        function addManualCard() {
+            const q = document.getElementById('manual-q').value.trim();
+            const a = document.getElementById('manual-a').value.trim();
+            if (!q || !a) { showToast("Maydonlarni to'ldiring", "error"); return; }
+            
+            state.cards.push({
+                id: 'c_'+Date.now(), q, a,
+                interval: 1, nextDate: getTodayStr(), ease: 2.5, reps: 0
+            });
+            document.getElementById('manual-q').value = '';
+            document.getElementById('manual-a').value = '';
+            hideModal('manual-card-modal');
+            saveData();
+            addXP(5);
+            showToast("Karta qo'shildi! +5 XP", "success");
+            renderCardsList();
+            checkReviewCards();
+        }
+
+        async function generateAICards() {
+            const text = document.getElementById('ai-source-text').value.trim();
+            if (!text) return;
+            
+            const btn = document.getElementById('btn-gen-cards');
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Kutilmoqda...`;
+            btn.disabled = true;
+
+            const prompt = text;
+            const instruction = "Berilgan matndan eng muhim savol va javoblarni fleshkartalar uchun ajratib oling. JSON formatda qaytaring. Qoidalarga qat'iy amal qiling.";
+            
+            const resultJSONStr = await fetchGeminiWithRetry(prompt, instruction, true);
+            
+            btn.innerHTML = `Yaratish <i class="fas fa-bolt"></i>`;
+            btn.disabled = false;
+
+            if (resultJSONStr) {
+                try {
+                    const data = JSON.parse(resultJSONStr);
+                    if (data.cards && data.cards.length > 0) {
+                        data.cards.forEach(item => {
+                            state.cards.push({
+                                id: 'c_'+Math.random().toString(36).substr(2, 9),
+                                q: item.q, a: item.a,
+                                interval: 1, nextDate: getTodayStr(), ease: 2.5, reps: 0
+                            });
+                        });
+                        saveData();
+                        addXP(20);
+                        hideModal('ai-card-modal');
+                        document.getElementById('ai-source-text').value = '';
+                        showToast(`${data.cards.length} ta karta qo'shildi! +20 XP`, "success");
+                        renderCardsList();
+                        checkReviewCards();
+                    }
+                } catch (e) {
+                    showToast("AI formatida xatolik.", "error");
+                }
+            }
+        }
+
+        function checkReviewCards() {
+            const today = getTodayStr();
+            const dueCards = state.cards.filter(c => c.nextDate <= today);
+            
+            if (dueCards.length > 0) {
+                document.getElementById('review-area').classList.remove('hidden');
+                document.getElementById('all-cards-area').classList.add('hidden');
+                document.getElementById('review-count').innerText = dueCards.length;
+                
+                // Set first card
+                currentReviewCard = dueCards[0];
+                document.getElementById('card-front').innerText = currentReviewCard.q;
+                document.getElementById('card-back').innerText = currentReviewCard.a;
+                
+                // Reset visual state
+                const inner = document.getElementById('flashcard-inner');
+                inner.classList.remove('rotate-y-180');
+                document.getElementById('review-buttons').classList.add('hidden');
+            } else {
+                document.getElementById('review-area').classList.add('hidden');
+                document.getElementById('all-cards-area').classList.remove('hidden');
+                renderCardsList();
+            }
+            renderDashboard(); // Update counts
+        }
+
+        function flipCard() {
+            if(!currentReviewCard) return;
+            const inner = document.getElementById('flashcard-inner');
+            if (!inner.classList.contains('rotate-y-180')) {
+                inner.classList.add('rotate-y-180');
+                document.getElementById('review-buttons').classList.remove('hidden');
+            }
+        }
+
+        function rateCard(quality) {
+            // quality: 1 (Fail), 3 (Hard), 4 (Good), 5 (Easy)
+            let c = currentReviewCard;
+            
+            if (quality === 1) {
+                c.interval = 1; c.reps = 0;
+            } else {
+                if (c.reps === 0) c.interval = 1;
+                else if (c.reps === 1) c.interval = 6;
+                else {
+                    if(quality === 3) c.interval = Math.max(1, Math.round(c.interval * 1.2));
+                    if(quality === 4) c.interval = Math.max(1, Math.round(c.interval * 2.5));
+                    if(quality === 5) c.interval = Math.max(1, Math.round(c.interval * 3.0));
+                }
+                c.reps++;
+            }
+            
+            // Calculate next date
+            let d = new Date();
+            d.setDate(d.getDate() + c.interval);
+            c.nextDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            
+            saveData();
+            addXP(3);
+            updateStreak();
+            checkReviewCards(); // Load next
+        }
+
+        // --- Challenges Logic ---
+        function renderChallenges() {
+            const grid = document.getElementById('challenges-grid');
+            grid.innerHTML = '';
+            
+            state.challenges.forEach(c => {
+                grid.innerHTML += `
+                    <div class="glass-panel p-6 rounded-2xl border ${c.done ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-gray-200 dark:border-gray-700'} relative overflow-hidden transition">
+                        ${c.done ? '<div class="absolute top-0 right-0 bg-green-500 text-white px-3 py-1 rounded-bl-lg text-xs font-bold">Bajarildi</div>' : ''}
+                        <h3 class="text-xl font-bold mb-2">${c.title}</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 h-10 overflow-hidden">${c.desc}</p>
+                        <div class="flex justify-between items-center mt-auto">
+                            <span class="text-indigo-600 font-bold dark:text-indigo-400">+${c.xp} XP</span>
+                            <button onclick="toggleChallenge('${c.id}')" class="px-4 py-2 rounded-lg font-medium transition ${c.done ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-700'}" ${c.done ? 'disabled' : ''}>
+                                ${c.done ? 'Yopilgan' : 'Bajarish'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function toggleChallenge(id) {
+            const c = state.challenges.find(x => x.id === id);
+            if (c && !c.done) {
+                c.done = true;
+                addXP(c.xp);
+                showToast(`Zo'r! ${c.xp} XP oldingiz!`, "success");
+                updateStreak();
+                saveData();
+                renderChallenges();
+            }
+        }
+
+        async function generateAIChallenge() {
+            const btn = document.getElementById('btn-gen-challenge');
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> O'ylanmoqda...`;
+            btn.disabled = true;
+
+            const prompt = "O'quvchi uchun 1 ta foydali, kreativ va qiziqarli yangi o'quv chaqirig'i (challenge) o'ylab toping.";
+            const instruction = "O'zbek tilida yozing. Format: Sarlavha|Qisqa ta'rif|XP miqdori (10-50 orasi son). Hech qanday qo'shimcha gaplarsiz faqat bitta qator shu formatda bering.";
+            
+            const res = await fetchGeminiWithRetry(prompt, instruction);
+            
+            btn.innerHTML = `<i class="fas fa-fire"></i> AI Yangi Chaqiriq`;
+            btn.disabled = false;
+
+            if (res && res.includes('|')) {
+                const parts = res.split('|');
+                if (parts.length >= 3) {
+                    state.challenges.unshift({
+                        id: 'ai_c_'+Date.now(),
+                        title: parts[0].trim(),
+                        desc: parts[1].trim(),
+                        xp: parseInt(parts[2].trim()) || 25,
+                        done: false
+                    });
+                    saveData();
+                    showToast("Yangi AI chaqiriq qo'shildi!", "success");
+                    renderChallenges();
+                }
+            } else {
+                showToast("Challenge yaratishda xato. Qayta urinib ko'ring.", "error");
+            }
+        }
+
+        // --- Pomodoro Logic ---
+        let timerInterval = null;
+        let timeLeft = 25 * 60; // seconds
+        let isWorking = true;
+
+        function updateTimerDisplay() {
+            const m = Math.floor(timeLeft / 60);
+            const s = timeLeft % 60;
+            document.getElementById('timer-display').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }
+
+        function setTimerMode(mode) {
+            pauseTimer();
+            isWorking = (mode === 'work');
+            timeLeft = isWorking ? 25 * 60 : 5 * 60;
+            
+            document.getElementById('mode-work').className = isWorking ? 'px-4 py-2 rounded-full bg-indigo-600 text-white font-medium' : 'px-4 py-2 rounded-full bg-transparent text-gray-500 hover:bg-gray-100 font-medium';
+            document.getElementById('mode-break').className = !isWorking ? 'px-4 py-2 rounded-full bg-indigo-600 text-white font-medium' : 'px-4 py-2 rounded-full bg-transparent text-gray-500 hover:bg-gray-100 font-medium';
+            
             updateTimerDisplay();
         }
 
-        function toggleTimer() {
-            soundManager.click();
-            isActive ? pauseTimer() : startTimer();
-        }
-
         function startTimer() {
-            if (timeLeft <= 0) return;
-            soundManager.init(); 
-            isActive = true;
-            document.getElementById('iconPlay').classList.add('hidden');
-            document.getElementById('iconPause').classList.remove('hidden');
-            
+            if (timerInterval) return;
             timerInterval = setInterval(() => {
-                if (timeLeft > 0) {
-                    timeLeft--;
-                    if (timeLeft <= 10) soundManager.warning();
-                    else if (timeLeft % 30 === 0) soundManager.tick();
-                    updateTimerDisplay();
-                } else {
-                    soundManager.alarm();
-                    finishTimer();
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    pauseTimer();
+                    showToast(isWorking ? "Fokus vaqti tugadi! Tanaffus qiling." : "Tanaffus tugadi. Ishga qaytamiz!", "success");
+                    if (isWorking) {
+                        state.deepWorkToday += 25;
+                        addXP(50);
+                        updateStreak();
+                        saveData();
+                        document.getElementById('pomodoro-today-stats').innerText = `${state.deepWorkToday} min`;
+                        renderDashboard();
+                    }
                 }
             }, 1000);
         }
 
         function pauseTimer() {
-            isActive = false;
             clearInterval(timerInterval);
-            document.getElementById('iconPlay').classList.remove('hidden');
-            document.getElementById('iconPause').classList.add('hidden');
+            timerInterval = null;
         }
 
-        function finishTimer() {
+        function resetTimer() {
             pauseTimer();
-            timeLeft = 0;
-            isFinished = true;
-            updateTimerDisplay();
-            updateCardsToFinishedState();
+            setTimerMode(isWorking ? 'work' : 'break');
         }
 
-        function finishEarly() { if (!isFinished) finishTimer(); }
+        // --- AI Examiner Logic ---
+        let examContext = "";
 
-        function adjustTime(s) {
-            if (isActive) return;
-            timeLeft = Math.max(0, timeLeft + s);
-            isFinished = false;
-            updateTimerDisplay();
-        }
+        async function startExam() {
+            const topic = document.getElementById('exam-topic').value.trim();
+            if (!topic) { showToast("Mavzuni kiriting", "error"); return; }
+            
+            const btn = document.getElementById('btn-start-exam');
+            const chat = document.getElementById('exam-chat');
+            const ansInput = document.getElementById('exam-answer');
+            const subBtn = document.getElementById('btn-submit-answer');
+            
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> O'ylanmoqda`;
+            btn.disabled = true;
 
-        function resetApp() {
-            pauseTimer();
-            timeLeft = 180;
-            isFinished = false;
-            init();
-        }
+            const prompt = `Mavzu: ${topic}`;
+            const instruction = "Siz qattiqqo'l, lekin adolatli universitet professorisiz. O'quvchining kiritgan mavzusi bo'yicha bitta qiyin, mantiqiy ochiq savol bering. Faqat bitta savol yozing, boshqa hech narsa qo'shmang.";
 
-        function toggleFullScreen() {
-            soundManager.click();
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(e => console.log(e));
-            } else {
-                if (document.exitFullscreen) document.exitFullscreen();
+            const aiQ = await fetchGeminiWithRetry(prompt, instruction);
+            
+            btn.innerHTML = `<i class="fas fa-play"></i> Boshlash`;
+            btn.disabled = false;
+
+            if (aiQ) {
+                examContext = `Mavzu: ${topic}\nSavol: ${aiQ}\n`;
+                chat.innerHTML = `
+                    <div class="flex flex-col gap-2 max-w-[80%]">
+                        <span class="text-xs text-gray-500 font-bold ml-1">AI Professor</span>
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 dark:border-gray-700">
+                            ${aiQ}
+                        </div>
+                    </div>
+                `;
+                ansInput.disabled = false;
+                subBtn.disabled = false;
+                subBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                ansInput.focus();
             }
         }
 
-        function updateTimerDisplay() {
-            const mins = Math.floor(timeLeft / 60);
-            const secs = timeLeft % 60;
-            const el = document.getElementById('timerDisplay');
-            el.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-            
-            if (timeLeft === 0) {
-                el.className = "text-4xl md:text-5xl font-black font-mono tracking-tighter px-4 min-w-[140px] text-center timer-critical";
-            } else if (timeLeft <= 10) {
-                el.className = "text-4xl md:text-5xl font-black font-mono tracking-tighter px-4 min-w-[140px] text-center text-red-400";
-            } else {
-                el.className = "text-4xl md:text-5xl font-black font-mono tracking-tighter px-4 min-w-[140px] text-center text-white";
-            }
-        }
+        async function submitAnswer() {
+            const ansInput = document.getElementById('exam-answer');
+            const answer = ansInput.value.trim();
+            if (!answer) return;
 
-        function getTeamStyle(color) {
-            const styles = {
-                indigo: { grad: 'from-indigo-600 to-slate-900', border: 'border-indigo-500/30' },
-                blue: { grad: 'from-blue-600 to-slate-900', border: 'border-blue-500/30' },
-                orange: { grad: 'from-orange-600 to-slate-900', border: 'border-orange-500/30' },
-                purple: { grad: 'from-purple-600 to-slate-900', border: 'border-purple-500/30' },
-            };
-            return styles[color];
-        }
-
-        function renderCards() {
-            const container = document.getElementById('cardsContainer');
-            container.innerHTML = '';
+            const chat = document.getElementById('exam-chat');
+            const subBtn = document.getElementById('btn-submit-answer');
             
-            scenarios.forEach((item, index) => {
-                const style = getTeamStyle(item.color);
-                const delay = index * 100;
+            // Render user message
+            chat.innerHTML += `
+                <div class="flex flex-col gap-2 max-w-[80%] self-end items-end ml-auto mt-4">
+                    <span class="text-xs text-gray-500 font-bold mr-1">Siz</span>
+                    <div class="bg-indigo-600 text-white p-4 rounded-2xl rounded-tr-none shadow-sm">
+                        ${answer}
+                    </div>
+                </div>
+            `;
+            
+            ansInput.value = '';
+            ansInput.disabled = true;
+            subBtn.disabled = true;
+            subBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Tahlil...`;
+            chat.scrollTop = chat.scrollHeight;
+
+            const prompt = `${examContext}O'quvchining javobi: ${answer}`;
+            const instruction = "O'quvchining javobini 0 dan 100 gacha baholang. Dastlab qalin harflarda [Bahozingiz: 85/100] shaklida yozing. Keyin qisqacha xatolarini tushuntiring va to'g'ri javobni ayting.";
+
+            const aiFeedback = await fetchGeminiWithRetry(prompt, instruction);
+            
+            ansInput.disabled = false;
+            subBtn.disabled = false;
+            subBtn.innerHTML = `<i class="fas fa-paper-plane"></i> Yuborish`;
+
+            if (aiFeedback) {
+                chat.innerHTML += `
+                    <div class="flex flex-col gap-2 max-w-[80%] mt-4">
+                        <span class="text-xs text-indigo-500 font-bold ml-1">AI Professor Bahosi</span>
+                        <div class="bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-2xl rounded-tl-none shadow-sm border border-indigo-100 dark:border-indigo-800">
+                            ${aiFeedback.replace(/\n/g, '<br>')}
+                        </div>
+                    </div>
+                `;
+                chat.scrollTop = chat.scrollHeight;
                 
-                // Javoblar bloki yig'ilishi
-                let errorsHTML = item.errorsList.map(err => `
-                    <div class="flex items-start gap-3 bg-white/5 p-2 rounded border border-white/5">
-                        <span class="bg-red-500/20 text-red-400 font-mono font-bold px-2 py-0.5 rounded text-sm shrink-0">${err.pts} ball</span>
-                        <p class="text-slate-200 text-sm md:text-base leading-snug">${err.text}</p>
-                    </div>
-                `).join('');
+                // Add XP if score is good (simple heuristic)
+                if (aiFeedback.includes("100") || aiFeedback.match(/[7-9][0-9]\/100/)) {
+                    addXP(40);
+                    showToast("Yaxshi baho! +40 XP", "success");
+                    updateStreak();
+                }
+            }
+        }
 
-                container.innerHTML += `
-                    <div id="card-${item.id}" 
-                         style="animation-delay: ${delay}ms"
-                         class="card-enter flex flex-col relative h-full bg-gradient-to-br ${style.grad} rounded-2xl border ${style.border} overflow-hidden shadow-2xl transition-all duration-300">
-                        
-                        <div class="px-5 py-4 bg-black/20 backdrop-blur-sm border-b border-white/5 flex justify-between items-center z-10">
-                            <h2 class="font-black text-xl uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70">${item.name}</h2>
-                            <span class="bg-white/10 px-3 py-1 rounded text-xs font-bold text-white/70 border border-white/5">KAZUS №${item.id}</span>
+        // --- Library Logic ---
+        function renderLibrary() {
+            const list = document.getElementById('resource-list');
+            list.innerHTML = '';
+            state.resources.slice().reverse().forEach(r => {
+                list.innerHTML += `
+                    <div class="glass-panel p-5 rounded-2xl border border-gray-200 dark:border-gray-700">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-lg">${r.title}</h4>
+                            <button onclick="deleteResource('${r.id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
                         </div>
-                        
-                        <div class="flex-1 p-5 md:p-6 flex flex-col z-10 overflow-y-auto">
-                            
-                            <!-- QUESTION -->
-                            <div id="question-${item.id}" class="h-full flex items-center transition-all duration-500">
-                                <p class="text-base md:text-lg font-medium text-slate-100 leading-relaxed text-justify">
-                                    ${item.question}
-                                </p>
-                            </div>
-
-                            <!-- ANSWER (Hidden initially) -->
-                            <div id="answer-${item.id}" class="hidden flex-col gap-3">
-                                <div class="bg-black/40 p-4 rounded-xl border border-red-500/30 shadow-lg">
-                                    <h3 class="text-red-400 font-bold uppercase text-xs tracking-wider mb-3">Xatolar va Ballar (Jami: 4 ta)</h3>
-                                    <div class="flex flex-col gap-2">
-                                        ${errorsHTML}
-                                    </div>
-                                </div>
-                                <div class="bg-yellow-500/10 p-3 mt-2 rounded-xl border-l-4 border-yellow-500">
-                                    <span class="text-yellow-400 font-bold uppercase text-xs tracking-wider block mb-1">Huquqiy Asos:</span>
-                                    <span class="text-sm text-yellow-100 font-mono font-medium">${item.law}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="footer-${item.id}" class="bg-black/30 p-4 border-t border-white/5 z-10">
-                            <!-- Empty footer placeholder until time is up -->
-                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 italic mb-3 border-l-4 border-purple-400 pl-3">
+                            ${r.summary}
+                        </p>
                     </div>
                 `;
             });
         }
 
-        function updateCardsToFinishedState() {
-            scenarios.forEach(item => {
-                const footer = document.getElementById(`footer-${item.id}`);
-                footer.innerHTML = `
-                    <button onclick="revealAnswer(${item.id}, this)" class="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold py-3 rounded-lg shadow-lg shadow-green-900/30 transform transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-wider border border-green-400/30">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                        JAVOBNI KO'RISH 
-                    </button>
-                `;
-            });
+        async function summarizeResource() {
+            const title = document.getElementById('res-title').value.trim();
+            const content = document.getElementById('res-content').value.trim();
+            if (!title || !content) { showToast("Sarlavha va matnni kiriting", "error"); return; }
+
+            const btn = document.getElementById('btn-summarize');
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> O'qilmoqda...`;
+            btn.disabled = true;
+
+            const prompt = content;
+            const instruction = "Berilgan matn yoki havoladagi ma'lumotni juda qisqa, 3-4 gapda, tushunarli qilib xulosalab bering. O'zbek tilida.";
+
+            const summary = await fetchGeminiWithRetry(prompt, instruction);
+
+            btn.innerHTML = `<i class="fas fa-magic"></i> AI Xulosa va Saqlash`;
+            btn.disabled = false;
+
+            if (summary) {
+                state.resources.push({ id: 'r_'+Date.now(), title, summary });
+                saveData();
+                addXP(15);
+                showToast("Saqlandi! +15 XP", "success");
+                document.getElementById('res-title').value = '';
+                document.getElementById('res-content').value = '';
+                renderLibrary();
+            }
         }
 
-        function revealAnswer(id, btn) {
-            soundManager.success(); 
-            
-            const card = document.getElementById(`card-${id}`);
-            const rect = btn.getBoundingClientRect();
-            
-            confetti.spawn(rect.left + rect.width/2, rect.top);
-
-            document.getElementById(`question-${id}`).classList.add('hidden');
-            const answerDiv = document.getElementById(`answer-${id}`);
-            answerDiv.classList.remove('hidden');
-            answerDiv.classList.add('flex', 'answer-reveal');
-
-            // Button becomes invisible/inactive after click
-            btn.style.display = 'none';
-
-            card.classList.remove('from-indigo-600', 'from-blue-600', 'from-orange-600', 'from-purple-600');
-            card.className = "flex flex-col relative h-full bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl transition-all duration-500";
+        function deleteResource(id) {
+            state.resources = state.resources.filter(r => r.id !== id);
+            saveData();
+            renderLibrary();
         }
 
-        // Initially DO NOT call init(), wait for login
+        // --- Initialization ---
+        function renderAll() {
+            renderTasks();
+            renderCardsList();
+            renderChallenges();
+            renderLibrary();
+            document.getElementById('pomodoro-today-stats').innerText = `${state.deepWorkToday} min`;
+        }
+
+        window.onload = () => {
+            loadData();
+        };
+
     </script>
 </body>
 </html>
