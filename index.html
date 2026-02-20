@@ -3,28 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ma'muriy Hududiy O'zgarishlar </title>
+    <title>Ma'muriy-Hududiy Tuzilish Masalalari</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         
         body { font-family: 'Inter', sans-serif; }
 
-        /* Glassmorphism */
         .glass {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* Animations */
         .card-enter { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
         .answer-reveal { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
         @keyframes popIn { 
-            0% { opacity: 0; transform: scale(0.9); } 
+            0% { opacity: 0; transform: scale(0.95); } 
             100% { opacity: 1; transform: scale(1); } 
         }
         @keyframes pulse-critical {
@@ -38,13 +36,11 @@
             text-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        /* Confetti Canvas */
         #confetti-canvas {
             position: fixed;
             top: 0;
@@ -54,90 +50,126 @@
             pointer-events: none;
             z-index: 50;
         }
+
+        /* Login Screen Overlay */
+        #loginOverlay {
+            position: fixed;
+            inset: 0;
+            background: #0B1120;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
     </style>
 </head>
-<body class="bg-[#0B1120] text-slate-100 min-h-screen flex flex-col relative overflow-y-auto selection:bg-blue-500 selection:text-white">
+<body class="bg-[#0B1120] text-slate-100 min-h-screen flex flex-col relative overflow-y-auto overflow-x-hidden selection:bg-blue-500 selection:text-white">
 
-    <canvas id="confetti-canvas"></canvas>
-
-    <!-- HEADER -->
-    <header class="sticky top-0 z-40 glass border-b-0 shadow-2xl transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4 py-3 md:px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+    <!-- LOGIN SCREEN -->
+    <div id="loginOverlay">
+        <div class="glass p-8 md:p-12 rounded-2xl shadow-2xl border border-slate-700 max-w-md w-full mx-4 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <h2 class="text-2xl font-black mb-2 text-white tracking-widest uppercase">Tizimga Kirish</h2>
+            <p class="text-slate-400 mb-8 text-sm">Kazuslar bazasiga kirish uchun parolni kiriting</p>
             
-            <!-- Logo & Title -->
-            <div class="flex items-center gap-4 w-full md:w-auto">
-                <div class="relative group">
-                    <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg blur opacity-40 group-hover:opacity-75 transition duration-200"></div>
+            <input type="password" id="passwordInput" placeholder="Parolni kiriting..." 
+                   class="w-full bg-slate-900 border border-slate-700 text-white px-4 py-4 rounded-xl mb-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-center text-lg tracking-widest"
+                   onkeypress="if(event.key === 'Enter') checkPassword()">
+            
+            <button onclick="checkPassword()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg active:scale-95 uppercase tracking-widest">
+                Kirish
+            </button>
+            <p id="loginError" class="text-red-500 mt-4 text-sm font-medium hidden">Parol noto'g'ri!</p>
+        </div>
+    </div>
+
+    <!-- MAIN APP (Hidden initially) -->
+    <div id="mainApp" class="hidden flex-col min-h-screen">
+        <canvas id="confetti-canvas"></canvas>
+
+        <!-- HEADER -->
+        <header class="sticky top-0 z-40 glass border-b border-slate-800 shadow-2xl transition-all duration-300">
+            <div class="max-w-7xl mx-auto px-4 py-3 md:px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                
+                <div class="flex items-center gap-4 w-full md:w-auto">
                     <div class="relative bg-slate-900 p-2.5 rounded-lg border border-slate-700">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
                     </div>
+                    <div>
+                        <h1 class="text-lg md:text-xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 uppercase">MA'MURIY-HUDUDIY TUZILISH MASALALARI</h1>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-lg md:text-xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 uppercase">Ma'muriy hududiy o'zgarishlar</h1>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+
+                <!-- Timer & Controls -->
+                <div class="flex items-center gap-3 w-full md:w-auto justify-between bg-slate-800/50 p-1.5 rounded-2xl border border-slate-700/50 backdrop-blur-md">
+                    
+                    <div class="flex flex-col gap-0.5 px-1">
+                        <button onclick="soundManager.click(); adjustTime(60)" class="text-[10px] font-bold text-green-400 hover:bg-slate-700/50 px-2 py-0.5 rounded transition">+1 MIN</button>
+                        <button onclick="soundManager.click(); adjustTime(-60)" class="text-[10px] font-bold text-red-400 hover:bg-slate-700/50 px-2 py-0.5 rounded transition">-1 MIN</button>
+                    </div>
+
+                    <div id="timerDisplay" class="text-4xl md:text-5xl font-black font-mono tracking-tighter text-white px-4 min-w-[140px] text-center" style="font-variant-numeric: tabular-nums;">
+                        03:00
+                    </div>
+
+                    <div class="flex gap-1 pr-1">
+                        <button id="btnStart" onclick="toggleTimer()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg active:scale-95 transition-all">
+                            <svg id="iconPlay" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            <svg id="iconPause" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                        </button>
                         
+                        <button onclick="soundManager.error(); finishEarly()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-700 hover:bg-red-600 hover:text-white text-slate-300 transition-all active:scale-95" title="Tugatish">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                            </svg>
+                        </button>
+
+                        <button onclick="soundManager.click(); resetApp()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 transition-all active:scale-95" title="Qayta yuklash">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                        </button>
+
+                        <button onclick="toggleFullScreen()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 transition-all active:scale-95" title="To'liq ekran">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
+        </header>
 
-            <!-- Timer & Controls -->
-            <div class="flex items-center gap-3 w-full md:w-auto justify-between bg-slate-800/50 p-1.5 rounded-2xl border border-slate-700/50 backdrop-blur-md">
-                
-                <!-- Time Adjust -->
-                <div class="flex flex-col gap-0.5 px-1">
-                    <button onclick="soundManager.click(); adjustTime(60)" class="text-[10px] font-bold text-green-400 hover:bg-slate-700/50 px-2 py-0.5 rounded transition">+1 MIN</button>
-                    <button onclick="soundManager.click(); adjustTime(-60)" class="text-[10px] font-bold text-red-400 hover:bg-slate-700/50 px-2 py-0.5 rounded transition">-1 MIN</button>
-                </div>
-
-                <!-- Main Clock -->
-                <div id="timerDisplay" class="text-4xl md:text-5xl font-black font-mono tracking-tighter text-white px-4 min-w-[140px] text-center" style="font-variant-numeric: tabular-nums;">
-                    03:00
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex gap-1 pr-1">
-                    <button id="btnStart" onclick="toggleTimer()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg active:scale-95 transition-all group">
-                        <svg id="iconPlay" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                        <svg id="iconPause" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden fill-current animate-pulse" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                    </button>
-                    
-                    <button onclick="soundManager.error(); finishEarly()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-700 hover:bg-red-600 hover:text-white text-slate-300 transition-all active:scale-95" title="Tugatish">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-                        </svg>
-                    </button>
-
-                    <button onclick="soundManager.click(); resetApp()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 transition-all active:scale-95" title="Qayta yuklash">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                    </button>
-
-                    <button onclick="toggleFullScreen()" class="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 transition-all active:scale-95" title="To'liq ekran">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- MAIN GRID -->
-    <main id="cardsContainer" class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 p-4 md:p-6 max-w-8xl mx-auto w-full pb-20">
-        <!-- Cards rendered by JS -->
-    </main>
-
-    <!-- FOOTER STATUS -->
-    <footer class="fixed bottom-0 left-0 w-full bg-slate-900/90 backdrop-blur text-center py-2 border-t border-slate-800 z-30">
-        <p class="text-xs text-slate-500 font-mono">SYSTEM READY • AUDIO ENABLED • V1.0.0</p>
-    </footer>
+        <!-- MAIN GRID -->
+        <main id="cardsContainer" class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 p-4 md:p-6 max-w-[1400px] mx-auto w-full pb-20">
+            <!-- Cards rendered by JS -->
+        </main>
+    </div>
 
     <script>
+        // --- 0. LOGIN SYSTEM ---
+        function checkPassword() {
+            const input = document.getElementById('passwordInput').value;
+            const errorEl = document.getElementById('loginError');
+            
+            if (input === '.Rustamov.007') {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainApp').classList.remove('hidden');
+                document.getElementById('mainApp').classList.add('flex');
+                init(); // Start app only after login
+            } else {
+                errorEl.classList.remove('hidden');
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordInput').focus();
+            }
+        }
+
         // --- 1. PROFESSIONAL OVOZ TIZIMI (AudioContext) ---
         const soundManager = {
             ctx: null,
@@ -241,7 +273,7 @@
                     let p = this.particles[i];
                     p.x += p.vx;
                     p.y += p.vy;
-                    p.vy += 0.5; // Gravity
+                    p.vy += 0.5;
                     p.life--;
                     p.size *= 0.95;
                     this.ctx.fillStyle = p.color;
@@ -255,67 +287,47 @@
         };
         confetti.init();
 
-        // --- 3. MA'LUMOTLAR BAZASI ---
+        // --- 3. MA'LUMOTLAR BAZASI (MAXSUS 4 TA KAZUS) ---
         const questionPool = [
-             {
-                question: "Buxoro va Navoiy hokimlari suv ombori hududini almashish bo'yicha 'Memorandum' imzoladi. Bu hujjat chegarani o'zgartirish uchun asos bo'la oladimi?",
-                answer: "YO'Q. Memorandum yuridik kuchga ega emas. Chegarani o'zgartirish faqat SENAT qarori bilan, Vazirlar Mahkamasi taklifiga binoan amalga oshiriladi.",
-                law: "Konstitutsiya 81-modda; Ma'muriy-hududiy tuzilish qonuni"
+            {
+                question: "Viloyat hokimi aholisi 25 000 kishi bo'lgan yirik va istiqbolli qishloqni to'g'ridan-to'g'ri 'viloyat bo'ysunuvidagi shahar' toifasiga o'tkazish bo'yicha qaror qabul qilib, iltimosnomani O'zbekiston Respublikasi Vazirlar Mahkamasiga yubordi. Viloyat hokimligi tomonidan tuzilgan maxsus komissiya o'zining ichki bayonnomasi bilan xulosa berish muddatini 40 kunga uzaytirdi. Vazirlar Mahkamasi iltimosnomani ko'rib chiqib, o'z apparati xodimlari orqali yangi shaharning kartografik chizmalarini tayyorlatdi va hujjatlarni Oliy Majlisga yubordi.",
+                errorsList: [
+                    { pts: "15", text: "Qishloq aholisining soni viloyat bo'ysunuvidagi shahar toifasi uchun yetarli emas." },
+                    { pts: "20", text: "Maxsus komissiya xulosa berish muddatini mustaqil uzaytirishi va u 1 oydan oshishi." },
+                    { pts: "25", text: "Viloyat hokimining 'qaror qabul qilishi' (Kengash qarori kerak)." },
+                    { pts: "30", text: "Kartografik chizmalarning Vazirlar Mahkamasi tomonidan tayyorlanishi (Kadastr vakolati)." }
+                ],
+                law: "Ma'muriy-hududiy tuzilish qonuni: 3, 11, 14, 34-moddalar."
             },
             {
-                question: "Toshkent shahrida 'Yangi Avlod' tumani tuzilmoqda. Shahar Kengashi 'Davlat ehtiyoji' sababli aholi fikrini o'rganishni rad etdi. Bu to'g'rimi?",
-                answer: "NOQONUNIY. Qonunning 6-moddasiga ko'ra, aholi fikrini hisobga olish majburiy (imperativ) talabdir. 'Davlat ehtiyoji' bu tartibni bekor qilmaydi.",
-                law: "Ma'muriy-hududiy tuzilish qonuni, 6-modda"
+                question: "Qoraqalpog'iston Respublikasi Vazirlar Kengashi hududda yangi tuman tuzish bo'yicha taklif tayyorlab, tasdiqlash uchun to'g'ridan-to'g'ri Oliy Majlisga yubordi. Oliy Majlis 30 kun ichida uzil-kesil qarorni qabul qildi. Qaror chiqqanidan so'ng, yangi tumanda saylov okruglarini o'zgartirish masalasi ko'rib chiqildi va Vazirlar Kengashi 15 ish kuni ichida ma'lumotlarni Davlat reyestriga kiritish uchun Kadastr agentligiga taqdim etdi.",
+                errorsList: [
+                    { pts: "15", text: "Hujjatlarni to'g'ridan-to'g'ri Oliy Majlisga yuborish (Jo'qorg'i Kengesga emas)." },
+                    { pts: "20", text: "Oliy Majlisning yakuniy qaror qabul qilishi (u faqat rozilik beradi)." },
+                    { pts: "25", text: "Davlat reyestriga kiritish muddatining buzilishi (uzog'i 10 kun)." },
+                    { pts: "30", text: "Saylov okruglari masalasini Oliy Majlis qarori chiqqanidan keyin hal qilinishi." }
+                ],
+                law: "Ma'muriy-hududiy tuzilish qonuni: 15, 19, 40-1-moddalar."
             },
             {
-                question: "Vazirlar Mahkamasi o'z qarori bilan Farg'ona tumanini 'Maxsus zona' deb e'lon qilib, uning chegarasini o'zgartirdi. Bu qaror kuchga egami?",
-                answer: "G'AYRIKONSTITUTSIYAVIY. Vazirlar Mahkamasi ijro organi bo'lib, hududiy chegaralarni o'zgartirish vakolatiga ega emas. Bu faqat Oliy Majlis Senati vakolatida.",
-                law: "Konstitutsiya 81-modda"
+                question: "Tuman hokimi aholisi 1800 kishi bo'lgan, sanoat korxonasi yo'q qishloqni 'shaharcha' toifasiga kiritish iltimosnomasini tayyorladi. Komissiya loyihaga salbiy xulosa bergan bo'lsa-da, hokim jarayonni bevosita xalq deputatlari tuman Kengashiga kiritdi. Tuman Kengashi ijobiy qaror qabul qilib, navbatchi xaritalarga tushirish uchun viloyat hokimligiga topshiriq berdi.",
+                errorsList: [
+                    { pts: "15", text: "Qishloqning aholi soni va infratuzilmasi shaharcha talablariga javob bermasligi." },
+                    { pts: "20", text: "Salbiy xulosa olingan loyihaning jarayonini davom ettirish." },
+                    { pts: "25", text: "Qishloqni shaharchaga o'tkazishni tuman Kengashi hal qilishi (viloyat Kengashi vakolati)." },
+                    { pts: "30", text: "Navbatchi xaritalarni yuritish viloyat hokimligiga topshirilishi." }
+                ],
+                law: "Ma'muriy-hududiy tuzilish qonuni: 3, 11, 14, 38-moddalar."
             },
             {
-                question: "Xalq deputatlari Xorazm viloyat Kengashi Urganch tumaniga 'Jaloliddin Manguberdi' nomini berish haqida uzil-kesil qaror qabul qildi. Xato qayerda?",
-                answer: "VAKOLAT BUZILDI. Viloyat Kengashi nom berish bo'yicha qaror emas, faqat ILTIMOSNOMA kiritishi mumkin. Nom berish Senat qarori bilan bo'ladi.",
-                law: "Geografik obyektlar nomlari to'g'risida qonun"
-            },
-            {
-                question: "Andijon viloyati tarkibida bo'lgan 'Xonobod' shahrini viloyat bo'ysunuvidagi shaharlar ro'yxatidan chiqarib, tuman bo'ysunuviga o'tkazishni kim hal qiladi?",
-                answer: "OLIY MAJLIS SENATI. Viloyat bo'ysunuvidagi shaharlar toifasini o'zgartirish Prezident farmoni emas, Senat qarori bilan amalga oshiriladi.",
-                law: "Ma'muriy-hududiy tuzilish to'g'risida qonun, 18-modda"
-            },
-            {
-                question: "Surxondaryo viloyati Termiz shahrining 'Do'stlik' mahallasini Termiz tumaniga o'tkazish uchun Senat qarori shartmi?",
-                answer: "SHART EMAS. Mahalla (shahar ichidagi chegara) chegaralarini o'zgartirish Xalq deputatlari shahar va tuman Kengashlari vakolatiga kiradi, Senatga chiqmaydi.",
-                law: "O'zini o'zi boshqarish organlari to'g'risida qonun"
-            },
-            {
-                question: "Prezident Farmoni bilan Sirdaryo viloyatida 'Erkin iqtisodiy zona' tashkil etildi va unga alohida ma'muriy maqom berildi. Bu yangi tuman tuzildi deganimi?",
-                answer: "YO'Q. Iqtisodiy maqom (EIZ) ma'muriy-hududiy birlik (tuman/shahar) tuzilganini anglatmaydi. Tuman tuzish uchun alohida Senat qarori kerak.",
-                law: "Ma'muriy-hududiy tuzilish va EIZ to'g'risidagi qonunlar"
-            },
-            {
-                question: "Fuqarolar tashabbuskor guruhi tumanni ikkiga bo'lish bo'yicha referendum o'tkazishni talab qilmoqda. Bu referendum natijasi qonuniy kuchga egami?",
-                answer: "YO'Q. Ma'muriy chegaralar masalasi mahalliy referendum predmeti bo'la olmaydi. Aholi fikri yig'ilishlar orqali olinadi, lekin referendum orqali hal qilinmaydi.",
-                law: "O'zbekiston Respublikasining Referendumi to'g'risidagi qonun"
-            },
-            {
-                question: "Qashqadaryo viloyat hokimi 'Optimallashtirish' dasturi doirasida ikki qishloq fuqarolar yig'inini birlashtirish haqida qaror chiqardi. Hokim haqlimi?",
-                answer: "HAQLI EMAS. Fuqarolar yig'inlarini (QFY/MFY) tuzish va tugatish Xalq deputatlari tuman Kengashi vakolatidir, hokimning yakka tartibdagi qarori bilan emas.",
-                law: "Fuqarolar yig'ini raisi saylovi to'g'risida qonun"
-            },
-            {
-                question: "Toshkent viloyati markazini Nurafshon shahridan boshqa shahar ko'chirish taklifi berildi. Bu qarorni viloyat hokimi qabul qiladimi?",
-                answer: "YO'Q. Viloyat ma'muriy markazini belgilash yoki ko'chirish Oliy Majlis Senati tomonidan, Vazirlar Mahkamasi taklifiga binoan amalga oshiriladi.",
-                law: "Ma'muriy-hududiy tuzilish to'g'risida qonun, 5-modda"
-            },
-            {
-                question: "So'x tumanining (eksklav) chegaralarini kengaytirish bo'yicha O'zbekiston Senati bir tomonlama qaror qabul qildi. Bu yuridik jihatdan yetarlimi?",
-                answer: "YETARLI EMAS. Davlat chegarasini o'zgartirish xalqaro shartnomalarni talab qiladi. Ma'muriy qonunchilikdan tashqari, Davlat chegarasi to'g'risidagi qonun va xalqaro kelishuv shart.",
-                law: "O'zbekiston Respublikasining Davlat chegarasi to'g'risida qonun"
-            },
-            {
-                question: "Yangi tashkil etilgan tumanga 'Turon' nomini berish uchun aholidan so'rovnoma o'tkazildi, 80% qarshi chiqdi. Senat baribir shu nomni tasdiqlay oladimi?",
-                answer: "HA, TASDIQLAY OLADI. Qonunga ko'ra, aholi fikri 'inobatga olinadi', lekin bu veto qo'yish huquqini bermaydi. Yakuniy qaror davlat manfaatlari asosida Senatda qoladi.",
-                law: "Geografik obyektlarning nomlari to'g'risida qonun"
+                question: "Tuman hokimi tuman markazini ko'chirish niyatida qarorni tezlashtirish uchun to'g'ridan-to'g'ri Vazirlar Mahkamasiga iltimosnoma kiritdi. Iltimosnomaga hokimlik tasdiqlagan chegaralar chizig'i ilova qilindi. Vazirlar Mahkamasi taklifni 45 kunda ma'qulladi. Tuman markazi ko'chirilgach, nizoli uchastkalarga aniqlik kiritish to'g'ridan-to'g'ri tuman hokimligiga topshirildi.",
+                errorsList: [
+                    { pts: "15", text: "Iltimosnoma noto'g'ri organga (Vazirlar Mahkamasiga) yuborilgani." },
+                    { pts: "20", text: "Chegaralar chizig'i hokimlik tomonidan tayyorlanib tasdiqlangani." },
+                    { pts: "25", text: "Davlat organining ko'rib chiqish muddatini buzishi (30 kun o'rniga 45 kun)." },
+                    { pts: "30", text: "Nizoli uchastkalarga aniqlik kiritish hokimlikka topshirilgani (Kadastr vakolati)." }
+                ],
+                law: "Ma'muriy-hududiy tuzilish qonuni: 11, 31-moddalar."
             }
         ];
 
@@ -323,7 +335,7 @@
             { id: 1, name: "1-JAMOA", color: "indigo" },
             { id: 2, name: "2-JAMOA", color: "blue" },
             { id: 3, name: "3-JAMOA", color: "orange" },
-            { id: 4, name: "4-JAMOA", color: "purple" }
+            { id: 5, name: "5-JAMOA", color: "purple" }
         ];
 
         // --- 4. DASTUR MANTIQI ---
@@ -338,7 +350,8 @@
         }
 
         function init() {
-            const selected = shuffle([...questionPool]).slice(0, 4);
+            // Savollar har safar yuklanganda aralashadi
+            const selected = shuffle([...questionPool]);
             scenarios = teamConfigs.map((team, i) => ({ ...team, ...selected[i] }));
             renderCards();
             updateTimerDisplay();
@@ -351,7 +364,7 @@
 
         function startTimer() {
             if (timeLeft <= 0) return;
-            soundManager.init(); // AudioContext ni faollashtirish
+            soundManager.init(); 
             isActive = true;
             document.getElementById('iconPlay').classList.add('hidden');
             document.getElementById('iconPause').classList.remove('hidden');
@@ -359,10 +372,8 @@
             timerInterval = setInterval(() => {
                 if (timeLeft > 0) {
                     timeLeft--;
-                    // Ovozli effektlar
-                    if (timeLeft <= 10) soundManager.warning(); // Oxirgi 10 soniyada signal
-                    else if (timeLeft % 30 === 0) soundManager.tick(); // Har 30 sekunda tik
-                    
+                    if (timeLeft <= 10) soundManager.warning();
+                    else if (timeLeft % 30 === 0) soundManager.tick();
                     updateTimerDisplay();
                 } else {
                     soundManager.alarm();
@@ -442,55 +453,52 @@
             
             scenarios.forEach((item, index) => {
                 const style = getTeamStyle(item.color);
-                
-                // Animation delay for stagger effect
                 const delay = index * 100;
                 
+                // Javoblar bloki yig'ilishi
+                let errorsHTML = item.errorsList.map(err => `
+                    <div class="flex items-start gap-3 bg-white/5 p-2 rounded border border-white/5">
+                        <span class="bg-red-500/20 text-red-400 font-mono font-bold px-2 py-0.5 rounded text-sm shrink-0">${err.pts} ball</span>
+                        <p class="text-slate-200 text-sm md:text-base leading-snug">${err.text}</p>
+                    </div>
+                `).join('');
+
                 container.innerHTML += `
                     <div id="card-${item.id}" 
                          style="animation-delay: ${delay}ms"
-                         class="card-enter flex flex-col relative h-full bg-gradient-to-br ${style.grad} rounded-2xl border ${style.border} overflow-hidden shadow-2xl hover:shadow-blue-900/20 transition-all duration-300 group">
+                         class="card-enter flex flex-col relative h-full bg-gradient-to-br ${style.grad} rounded-2xl border ${style.border} overflow-hidden shadow-2xl transition-all duration-300">
                         
-                        <!-- Decoration Lines -->
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-
-                        <!-- Header -->
                         <div class="px-5 py-4 bg-black/20 backdrop-blur-sm border-b border-white/5 flex justify-between items-center z-10">
-                            <h2 class="font-black text-2xl uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70">${item.name}</h2>
+                            <h2 class="font-black text-xl uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70">${item.name}</h2>
                             <span class="bg-white/10 px-3 py-1 rounded text-xs font-bold text-white/70 border border-white/5">KAZUS №${item.id}</span>
                         </div>
                         
-                        <!-- Body -->
-                        <div class="flex-1 p-6 flex flex-col justify-center relative z-10">
+                        <div class="flex-1 p-5 md:p-6 flex flex-col z-10 overflow-y-auto">
                             
                             <!-- QUESTION -->
                             <div id="question-${item.id}" class="h-full flex items-center transition-all duration-500">
-                                <p class="text-xl md:text-2xl font-bold text-slate-100 leading-snug drop-shadow-md">
+                                <p class="text-base md:text-lg font-medium text-slate-100 leading-relaxed text-justify">
                                     ${item.question}
                                 </p>
                             </div>
 
-                            <!-- ANSWER -->
-                            <div id="answer-${item.id}" class="hidden h-full flex flex-col justify-center gap-4">
-                                <div class="relative bg-black/40 p-5 rounded-xl border border-green-500/30 shadow-lg backdrop-blur-md">
-                                    <div class="absolute -top-3 -left-3 bg-green-500 text-black text-xs font-black px-2 py-1 rounded shadow-lg transform -rotate-2">TO'G'RI JAVOB</div>
-                                    <p class="text-xl md:text-2xl font-bold text-white leading-relaxed">
-                                        ${item.answer}
-                                    </p>
+                            <!-- ANSWER (Hidden initially) -->
+                            <div id="answer-${item.id}" class="hidden flex-col gap-3">
+                                <div class="bg-black/40 p-4 rounded-xl border border-red-500/30 shadow-lg">
+                                    <h3 class="text-red-400 font-bold uppercase text-xs tracking-wider mb-3">Xatolar va Ballar (Jami: 4 ta)</h3>
+                                    <div class="flex flex-col gap-2">
+                                        ${errorsHTML}
+                                    </div>
                                 </div>
-                                <div class="bg-yellow-500/10 p-4 rounded-xl border-l-4 border-yellow-500">
+                                <div class="bg-yellow-500/10 p-3 mt-2 rounded-xl border-l-4 border-yellow-500">
                                     <span class="text-yellow-400 font-bold uppercase text-xs tracking-wider block mb-1">Huquqiy Asos:</span>
-                                    <span class="text-lg text-yellow-100 font-mono font-medium">${item.law}</span>
+                                    <span class="text-sm text-yellow-100 font-mono font-medium">${item.law}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Footer -->
-                        <div id="footer-${item.id}" class="bg-black/30 p-4 border-t border-white/5 min-h-[80px] flex justify-center items-center z-10">
-                            <div class="flex items-center gap-3 text-yellow-400/80 animate-pulse">
-                                <div class="w-2 h-2 rounded-full bg-yellow-400"></div>
-                                <span class="text-sm font-bold tracking-widest uppercase">Tahlil jarayoni...</span>
-                            </div>
+                        <div id="footer-${item.id}" class="bg-black/30 p-4 border-t border-white/5 z-10">
+                            <!-- Empty footer placeholder until time is up -->
                         </div>
                     </div>
                 `;
@@ -510,33 +518,26 @@
         }
 
         function revealAnswer(id, btn) {
-            soundManager.success(); // Ovoz
+            soundManager.success(); 
             
             const card = document.getElementById(`card-${id}`);
             const rect = btn.getBoundingClientRect();
             
-            // Konfetti otish
             confetti.spawn(rect.left + rect.width/2, rect.top);
 
             document.getElementById(`question-${id}`).classList.add('hidden');
             const answerDiv = document.getElementById(`answer-${id}`);
             answerDiv.classList.remove('hidden');
-            answerDiv.classList.add('answer-reveal');
+            answerDiv.classList.add('flex', 'answer-reveal');
 
-            // Card Style Update
+            // Button becomes invisible/inactive after click
+            btn.style.display = 'none';
+
             card.classList.remove('from-indigo-600', 'from-blue-600', 'from-orange-600', 'from-purple-600');
-            card.className = "flex flex-col relative h-full bg-slate-800 rounded-2xl border-2 border-green-500 overflow-hidden shadow-[0_0_30px_rgba(34,197,94,0.2)] transition-all duration-500";
-            
-            document.getElementById(`footer-${id}`).innerHTML = `
-                <div class="text-green-400 font-bold flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                
-                </div>
-            `;
+            card.className = "flex flex-col relative h-full bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl transition-all duration-500";
         }
 
-        // Initialize
-        init();
+        // Initially DO NOT call init(), wait for login
     </script>
 </body>
 </html>
