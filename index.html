@@ -73,7 +73,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
             <h2 class="text-2xl font-black mb-2 text-white tracking-widest uppercase">Tizimga Kirish</h2>
-            <p class="text-slate-400 mb-8 text-sm">Kazuslar bazasiga kirish uchun parolni kiriting</p>
+            <p class="text-slate-400 mb-8 text-sm"></p>
             
             <input type="password" id="passwordInput" placeholder="Parolni kiriting..." 
                    class="w-full bg-slate-900 border border-slate-700 text-white px-4 py-4 rounded-xl mb-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-center text-lg tracking-widest"
@@ -297,7 +297,7 @@
                     { pts: "25", text: "Viloyat hokimining 'qaror qabul qilishi' (Kengash qarori kerak)." },
                     { pts: "30", text: "Kartografik chizmalarning Vazirlar Mahkamasi tomonidan tayyorlanishi (Kadastr vakolati)." }
                 ],
-                law: "Ma'muriy-hududiy tuzilish qonuni: 3, 11, 14, 34-moddalar."
+                law: "Ma'muriy-hududiy tuzilish to'g'rsidagi: 3, 11, 14, 34-moddalar."
             },
             {
                 question: "Qoraqalpog'iston Respublikasi Vazirlar Kengashi hududda yangi tuman tuzish bo'yicha taklif tayyorlab, tasdiqlash uchun to'g'ridan-to'g'ri Oliy Majlisga yubordi. Oliy Majlis 30 kun ichida uzil-kesil qarorni qabul qildi. Qaror chiqqanidan so'ng, yangi tumanda saylov okruglarini o'zgartirish masalasi ko'rib chiqildi va Vazirlar Kengashi 15 ish kuni ichida ma'lumotlarni Davlat reyestriga kiritish uchun Kadastr agentligiga taqdim etdi.",
@@ -307,7 +307,7 @@
                     { pts: "25", text: "Davlat reyestriga kiritish muddatining buzilishi (uzog'i 10 kun)." },
                     { pts: "30", text: "Saylov okruglari masalasini Oliy Majlis qarori chiqqanidan keyin hal qilinishi." }
                 ],
-                law: "Ma'muriy-hududiy tuzilish qonuni: 15, 19, 40-1-moddalar."
+                law: "Ma'muriy-hududiy tuzilish to'g'rsidagi: 15, 19, 40-1-moddalar."
             },
             {
                 question: "Tuman hokimi aholisi 1800 kishi bo'lgan, sanoat korxonasi yo'q qishloqni 'shaharcha' toifasiga kiritish iltimosnomasini tayyorladi. Komissiya loyihaga salbiy xulosa bergan bo'lsa-da, hokim jarayonni bevosita xalq deputatlari tuman Kengashiga kiritdi. Tuman Kengashi ijobiy qaror qabul qilib, navbatchi xaritalarga tushirish uchun viloyat hokimligiga topshiriq berdi.",
@@ -317,7 +317,7 @@
                     { pts: "25", text: "Qishloqni shaharchaga o'tkazishni tuman Kengashi hal qilishi (viloyat Kengashi vakolati)." },
                     { pts: "30", text: "Navbatchi xaritalarni yuritish viloyat hokimligiga topshirilishi." }
                 ],
-                law: "Ma'muriy-hududiy tuzilish qonuni: 3, 11, 14, 38-moddalar."
+                law: "Ma'muriy-hududiy tuzilish to'g'rsidagi: 3, 11, 14, 38-moddalar."
             },
             {
                 question: "Tuman hokimi tuman markazini ko'chirish niyatida qarorni tezlashtirish uchun to'g'ridan-to'g'ri Vazirlar Mahkamasiga iltimosnoma kiritdi. Iltimosnomaga hokimlik tasdiqlagan chegaralar chizig'i ilova qilindi. Vazirlar Mahkamasi taklifni 45 kunda ma'qulladi. Tuman markazi ko'chirilgach, nizoli uchastkalarga aniqlik kiritish to'g'ridan-to'g'ri tuman hokimligiga topshirildi.",
@@ -327,7 +327,7 @@
                     { pts: "25", text: "Davlat organining ko'rib chiqish muddatini buzishi (30 kun o'rniga 45 kun)." },
                     { pts: "30", text: "Nizoli uchastkalarga aniqlik kiritish hokimlikka topshirilgani (Kadastr vakolati)." }
                 ],
-                law: "Ma'muriy-hududiy tuzilish qonuni: 11, 31-moddalar."
+                law: "Ma'muriy-hududiy tuzilish to'g'risidagi: 11, 31-moddalar."
             }
         ];
 
@@ -511,7 +511,7 @@
                 footer.innerHTML = `
                     <button onclick="revealAnswer(${item.id}, this)" class="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold py-3 rounded-lg shadow-lg shadow-green-900/30 transform transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-wider border border-green-400/30">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                        JAVOBNI OCHISH
+                        JAVOBNI KO'RISH 
                     </button>
                 `;
             });
