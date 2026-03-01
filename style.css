@@ -1,0 +1,696 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+
+/* ========================================
+   PREMIUM CORPORATE DESIGN SYSTEM
+   Light Theme - Law School Simulation
+   ======================================== */
+
+:root {
+    /* Primary Corporate Colors */
+    --navy-900: #0f172a;
+    --navy-800: #1e293b;
+    --navy-700: #334155;
+    --navy-600: #475569;
+
+    /* Trustworthy Blue */
+    --blue-primary: #1e40af;
+    --blue-600: #2563eb;
+    --blue-500: #3b82f6;
+    --blue-100: #dbeafe;
+    --blue-50: #eff6ff;
+
+    /* Sophisticated Red/Green for Numbers */
+    --success: #059669;
+    --success-light: #d1fae5;
+    --danger: #dc2626;
+    --danger-light: #fee2e2;
+    --warning: #d97706;
+    --warning-light: #fef3c7;
+
+    /* Neutral Grays */
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --gray-900: #0f172a;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-slate: 0 4px 6px -1px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.04);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--gray-50);
+    color: var(--gray-800);
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+/* Typography */
+.font-display {
+    font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* ========================================
+   CORPORATE PANELS & CARDS
+   ======================================== */
+
+.corporate-panel {
+    background: #ffffff;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    box-shadow: var(--shadow-slate);
+    transition: box-shadow 0.3s ease;
+}
+
+.corporate-panel:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.corporate-panel.team-alpha {
+    border-top: 4px solid var(--blue-500);
+}
+
+.corporate-panel.team-beta {
+    border-top: 4px solid var(--danger);
+}
+
+/* Header Panel */
+.header-panel {
+    background: #ffffff;
+    border-bottom: 1px solid var(--gray-200);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ========================================
+   ZERO-SUM CORPORATE BATTLE - STYLES
+   ======================================== */
+
+:root {
+    --primary: #3b82f6;
+    --primary-dark: #1d4ed8;
+    --secondary: #64748b;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --background: #f8fafc;
+    --panel-bg: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --header-bg: rgba(255, 255, 255, 0.8);
+}
+
+/* DARK MODE VARIABLES */
+.dark-mode {
+    --primary: #60a5fa;
+    --primary-dark: #3b82f6;
+    --secondary: #94a3b8;
+    --success: #34d399;
+    --danger: #f87171;
+    --warning: #fbbf24;
+    --background: #0f172a;
+    --panel-bg: #1e293b;
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --header-bg: rgba(15, 23, 42, 0.9);
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--background);
+    color: var(--text-main);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.corporate-panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s, border-color 0.3s;
+}
+
+.header-panel {
+    background-color: var(--header-bg);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+}
+
+/* TYPOGRAPHY */
+.font-display {
+    font-family: 'Outfit', 'Inter', sans-serif;
+}
+
+/* TIMER DISPLAY */
+.timer-display {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.05em;
+    line-height: 1;
+}
+
+.timer-display.warning {
+    color: var(--danger);
+    animation: pulse-red 1s infinite;
+}
+
+@keyframes pulse-red {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* VALUE DISPLAY */
+.value-display {
+    font-size: 1.875rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+}
+
+.value-display.positive {
+    color: var(--success);
+}
+
+.value-display.negative {
+    color: var(--danger);
+}
+
+.value-display.neutral {
+    color: var(--primary);
+}
+
+.value-changed {
+    animation: value-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes value-pop {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* WORD TAGS */
+.word-tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.word-tag.team-alpha {
+    background-color: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+}
+
+.dark-mode .word-tag.team-alpha {
+    background-color: #1e3a8a;
+    color: #dbeafe;
+    border: 1px solid #1e40af;
+}
+
+.word-tag.team-beta {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.dark-mode .word-tag.team-beta {
+    background-color: #7f1d1d;
+    color: #fee2e2;
+    border: 1px solid #991b1b;
+}
+
+/* STATUS BADGES */
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.status-badge.live {
+    background-color: var(--danger);
+    color: white;
+    animation: blink 2s infinite;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* BUTTONS */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn-secondary {
+    background-color: var(--secondary);
+    color: white;
+}
+
+.btn-success {
+    background-color: var(--success);
+    color: white;
+}
+
+.btn-danger {
+    background-color: var(--danger);
+    color: white;
+}
+
+.btn-amber {
+    background-color: #d97706;
+    color: white;
+}
+
+/* FORMS */
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background-color: var(--panel-bg);
+    color: var(--text-main);
+}
+
+/* MODAL */
+.modal-overlay {
+    background-color: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: var(--panel-bg);
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border);
+}
+
+/* TICKER */
+.ticker-wrap {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    overflow: hidden;
+    height: 3rem;
+    background-color: #0f172a;
+    border-top: 1px solid #1e293b;
+    z-index: 50;
+}
+
+.ticker {
+    display: inline-block;
+    height: 3rem;
+    line-height: 3rem;
+    white-space: nowrap;
+    padding-right: 100%;
+    box-sizing: content-box;
+    animation: ticker 60s linear infinite;
+}
+
+.ticker-item {
+    display: inline-block;
+    padding: 0 2rem;
+    font-size: 0.875rem;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.ticker-item::before {
+    content: "•";
+    margin-right: 1rem;
+    color: var(--primary);
+}
+
+@keyframes ticker {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    100% {
+        transform: translate3d(-100%, 0, 0);
+    }
+}
+
+/* UTILITIES */
+.divider {
+    height: 1px;
+    background-color: var(--border);
+}
+
+/* PRESENTATION MODE */
+.presentation-mode .header-panel {
+    padding: 2rem 0;
+}
+
+.presentation-mode .timer-display {
+    font-size: 5rem;
+}
+
+.presentation-mode #drop-scenario {
+    font-size: 1.5rem;
+    line-height: 1.6;
+}
+
+.presentation-mode .value-display {
+    font-size: 3rem;
+}
+
+/* ANIMATIONS */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .timer-display {
+        font-size: 1.75rem;
+    }
+
+    .value-display {
+        font-size: 1.25rem;
+    }
+}
+
+/* CUSTOM SCROLLBAR */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+
+/* ========================================
+   DROP SCENARIO DISPLAY
+   ======================================== */
+
+.drop-scenario {
+    background: linear-gradient(135deg, var(--gray-50) 0%, #ffffff 100%);
+    border-left: 4px solid var(--blue-primary);
+    padding: 1.5rem;
+    border-radius: 0 8px 8px 0;
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: var(--gray-700);
+    box-shadow: var(--shadow-sm);
+}
+
+.drop-number {
+    display: inline-block;
+    background: var(--blue-primary);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+}
+
+/* ========================================
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: var(--gray-800);
+    font-size: 0.9375rem;
+    transition: all 0.2s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--blue-500);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+}
+
+/* ========================================
+   BUTTONS - CORPORATE
+   ======================================== */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background-color: var(--blue-primary);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+    background-color: #1e3a8a;
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-secondary {
+    background-color: var(--gray-100);
+    color: var(--gray-700);
+    border: 1px solid var(--gray-300);
+}
+
+.btn-secondary:hover {
+    background-color: var(--gray-200);
+}
+
+.btn-success {
+    background-color: var(--success);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.btn-success:hover {
+    background-color: #047857;
+}
+
+.btn-danger {
+    background-color: var(--danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #b91c1c;
+}
+
+.btn-amber {
+    background-color: var(--warning);
+    color: white;
+}
+
+.btn-amber:hover {
+    background-color: #b45309;
+}
+
+/* ========================================
+   STATUS INDICATORS
+   ======================================== */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-badge.live {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.status-badge.live::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background-color: var(--success);
+    border-radius: 50%;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}
+
+/* ========================================
+   SWING INDICATORS
+   ======================================== */
+
+.swing-positive {
+    color: var(--success);
+    font-weight: 700;
+}
+
+.swing-negative {
+    color: var(--danger);
+    font-weight: 700;
+}
+
+/* ========================================
+   CONNECTOR STATUS (For Judge Panel)
+   ======================================== */
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.connection-status.connected {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.connection-status.disconnected {
+    background-color: var(--danger-light);
+    color: var(--danger);
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+.text-gradient {
+    background: linear-gradient(135deg, var(--blue-primary) 0%, var(--blue-600) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gray-300), transparent);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .value-display {
+        font-size: 2rem;
+    }
+
+    .timer-display {
+        font-size: 2.25rem;
+    }
+}

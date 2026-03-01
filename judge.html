@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Judge Control Panel | Corporate Battle</title>
+    <!-- PWA Tags -->
+    <meta name="theme-color" content="#0f172a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Judge Panel">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="min-h-screen bg-slate-50">
+
+    <!-- HEADER -->
+    <header class="header-panel sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="font-display text-2xl font-bold text-slate-900">
+                        Judge <span class="text-amber-600">Control Panel</span>
+                    </h1>
+                    <div class="flex items-center gap-2 mt-1">
+                        <p class="text-xs text-slate-500">Teacher Interface</p>
+                        <button onclick="toggleDarkMode()"
+                            class="p-1 rounded bg-slate-100 text-slate-500 hover:text-amber-600 transition-colors"
+                            title="Toggle Dark Mode">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Connection Status -->
+                <div class="flex items-center gap-4">
+                    <div id="connection-status" class="connection-status connected">
+                        <span class="w-2 h-2 bg-current rounded-full"></span>
+                        <span>Sync Active (Firebase)</span>
+                    </div>
+                    <button onclick="undo()" class="btn btn-secondary text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                        </svg>
+                        Undo
+                    </button>
+                    <button onclick="resetSimulation()" class="btn btn-danger text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                            </path>
+                        </svg>
+                        Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-6 py-6">
+
+        <!-- TOP CONTROL BAR -->
+        <div class="corporate-panel p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
+                <!-- Current Scenario Display -->
+                <div class="md:col-span-2">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Current Scenario</p>
+                    <h2 id="current-drop-display" class="text-lg font-bold text-slate-800">Loading...</h2>
+                    <p id="drop-progress" class="text-sm text-slate-500 mt-1">Scenario 1 of 5</p>
+                </div>
+
+                <!-- Timer Controls -->
+                <div class="text-center">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Timer Control</p>
+                    <div class="flex gap-2 justify-center">
+                        <button onclick="startPrepTimer()" class="btn btn-warning text-sm">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            Start 30s Prep
+                        </button>
+                        <button onclick="startBattleTimer()" class="btn btn-success text-sm">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            Start 3m Battle
+                        </button>
+                        <button onclick="pauseTimer()" class="btn btn-secondary text-sm">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            Pause Timer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Next Drop Button -->
+                <div class="text-right">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Navigation</p>
+                    <button onclick="nextDrop()" class="btn btn-primary w-full">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                        </svg>
+                        Next Scenario
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- LEFT COLUMN: Current Standings -->
+            <div class="space-y-6">
+                <!-- Market Values -->
+                <div class="corporate-panel p-6">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Current Market Valuations
+                    </h3>
+
+                    <div class="space-y-4">
+                        <!-- Team Alpha -->
+                        <div class="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-100">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold">
+                                    A</div>
+                                <div>
+                                    <p class="font-bold text-slate-800">Team Alpha</p>
+                                    <p class="text-xs text-slate-500">Plaintiff / Startup</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p id="judge-val-alpha" class="text-2xl font-bold text-blue-600">$1,000,000</p>
+                                <p class="text-xs text-slate-400">Starting: $1,000,000</p>
+                            </div>
+                        </div>
+
+                        <!-- Team Beta -->
+                        <div class="flex items-center justify-between p-4 bg-red-50 rounded-xl border border-red-100">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center text-white font-bold">
+                                    B</div>
+                                <div>
+                                    <p class="font-bold text-slate-800">Team Beta</p>
+                                    <p class="text-xs text-slate-500">Defendant / Investors</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p id="judge-val-beta" class="text-2xl font-bold text-red-600">$1,000,000</p>
+                                <p class="text-xs text-slate-400">Starting: $1,000,000</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Adjust -->
+                <div class="corporate-panel p-6">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Manual Value Adjustment
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label text-xs">Alpha Adjustment</label>
+                            <div class="flex gap-2">
+                                <input type="number" id="manual-alpha" class="form-input text-sm" placeholder="0"
+                                    step="10000">
+                                <button onclick="adjustValue('alpha')"
+                                    class="btn btn-primary text-sm px-3">Apply</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label text-xs">Beta Adjustment</label>
+                            <div class="flex gap-2">
+                                <input type="number" id="manual-beta" class="form-input text-sm" placeholder="0"
+                                    step="10000">
+                                <button onclick="adjustValue('beta')"
+                                    class="btn btn-primary text-sm px-3">Apply</button>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2">Use positive numbers to add value, negative to subtract.</p>
+                </div>
+
+                <!-- Scenario Preview -->
+                <div class="corporate-panel p-6">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Current Scenario Details
+                    </h3>
+                    <div id="scenario-preview"
+                        class="p-4 bg-slate-50 rounded-lg border border-slate-200 text-sm text-slate-600 leading-relaxed">
+                        Loading scenario details...
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Verdict Input -->
+            <div class="space-y-6">
+                <!-- Gemini API Verdict Section -->
+                <div class="corporate-panel p-6 border-amber-200">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="font-bold text-slate-800">AI Verdict Input (Grok JSON Executor)</h3>
+                    </div>
+
+                    <!-- Input Method Toggle -->
+                    <div class="flex gap-2 mb-4 p-1 bg-slate-100 rounded-lg">
+                        <button id="tab-manual" onclick="switchTab('manual')"
+                            class="flex-1 py-2 px-4 rounded-md text-sm font-medium bg-white shadow-sm text-slate-800 transition-all">
+                            Manual Entry
+                        </button>
+                        <button id="tab-gemini" onclick="switchTab('gemini')"
+                            class="flex-1 py-2 px-4 rounded-md text-sm font-medium text-slate-500 hover:text-slate-700 transition-all">
+                            Grok JSON Executor
+                        </button>
+                    </div>
+
+                    <!-- Manual Entry Panel -->
+                    <div id="panel-manual" class="space-y-4">
+                        <div>
+                            <label class="form-label">Winner Selection</label>
+                            <select id="winner-select" class="form-input">
+                                <option value="alpha">Team Alpha (Plaintiff)</option>
+                                <option value="beta">Team Beta (Defendant)</option>
+                                <option value="draw">Draw / No Change</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Value Transfer Amount (Swing)</label>
+                            <input type="number" id="swing-amount" value="50000" step="10000" min="0"
+                                class="form-input">
+                            <p class="text-xs text-slate-400 mt-1">Amount transferred from loser to winner</p>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Verdict Reasoning</label>
+                            <textarea id="verdict-reason" rows="4" class="form-input"
+                                placeholder="Explain the legal reasoning for this verdict..."></textarea>
+                        </div>
+
+                        <button onclick="executeManualVerdict()" class="btn btn-amber w-full text-lg py-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Execute Verdict
+                        </button>
+                    </div>
+
+                    <!-- Grok JSON Executor Panel -->
+                    <div id="panel-gemini" class="space-y-4 hidden">
+                        <div class="p-4 bg-amber-50 rounded-lg border border-amber-100">
+                            <p class="text-sm text-amber-800 mb-2">
+                                <strong>Grok JSON Integration</strong>
+                            </p>
+                            <p class="text-xs text-amber-600">
+                                Paste the JSON output generated by Grok below to automatically update the dashboard.
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Paste Grok JSON Verdict:</label>
+                            <textarea id="grok-json-input" rows="12" class="form-input font-mono text-xs" placeholder='{
+  "winner": "alpha", 
+  "swing_amount": 50000, 
+  "display_message_for_gemini": "..."
+}'></textarea>
+                            <button onclick="executeGrokJSON()" class="btn btn-amber w-full mt-2">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                                Execute Grok JSON Verdict
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Log -->
+                <div class="corporate-panel p-6">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Activity Log</h3>
+                    <div id="activity-log" class="space-y-2 max-h-48 overflow-y-auto">
+                        <div class="text-xs text-slate-400 italic">No activity yet...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <p
+        style="text-align:center; color: #333; font-weight: bold; margin:10px 20px; box-shadow: 0 0 1px 1px gray; border-radius: 10px; padding: 10px;">
+        You are a Senior Corporate Law Analyst, Game Master and Strict AI-Content Detector for "Zero-Sum Corporate
+        Battle" at TDYU.
+
+        ANTI-CHEAT PROTOCOL (highest priority):
+
+        Real 1st-year students writing in 3 minutes make small typos, use simple sentences, have slightly awkward
+        phrasing and sometimes force keywords.
+
+        If the text is perfectly grammatical, uses advanced transitions ("Furthermore", "It is crucial to note", "In
+        conclusion", "Therefore"), overly polished structure or sounds like ChatGPT/Claude/Grok — the team AUTOMATICALLY
+        LOSES and receives maximum penalty.
+
+        LEXICON (only these 84 words are allowed):
+
+        [annual, annual return, articles of association, assets, at risk, authorised share capital, balance sheet,
+        capital, certificate of incorporation, contribute, corporation tax, dispute, dissolved, dividend, dormant
+        partner, draw, draw up, drawings, equity partner, expel, expenses, flexible, founder, income tax, incorporate,
+        incorporated business, invest, investment, issue, issued share capital, joint and several liability, legal
+        entity, legal personality, liable, limited liability, limited liability partnership, loss, manage, management,
+        market value, member, memorandum of association, nominal value, notice period, objects, off-the-shelf company,
+        option, partner, partnership, personal assets, premium, private limited company, profit, profit and loss
+        account, proportion, public limited company, records and accounts, register, registered office, resign, retire,
+        return, risky, rules and regulations, run a business, run into trouble, run up a debt, salaried partner,
+        self-assessment form, self-employed, set up, share, share capital, shareholder, single-member company, sleeping
+        partner, sole trader, stockbroker, submit, subscriber, substantial, trade, trade under, unlimited liability]
+
+        CURRENT DROP 1:
+
+        Title: The Secret Founder Claim
+
+        Scenario: A mysterious individual has suddenly emerged claiming to be the original founder who contributed
+        substantial capital and ideas before the company was officially incorporated. He demands a 35% proportion of the
+        issued share capital based on a verbal agreement made during the early set up phase. The current board strongly
+        disputes this, arguing that only the articles of association and certificate of incorporation define
+        ownership...
+
+        Target Words:
+
+        Team Alpha (Defense): incorporate, founder, articles of association, legal entity, limited liability
+
+        Team Beta (Attack): dividend, sleeping partner, issued share capital, proportion, shareholder
+
+        Now analyze the following student responses:
+
+        Team Alpha (Defense):
+
+        [ALPHA JAVOBINI SHU YERGA QO‘Y]
+
+        Team Beta (Attack):
+
+        [BETA JAVOBINI SHU YERGA QO‘Y]
+
+        First run anti-cheat. If any team used AI → they lose with 250000 swing.
+
+        If both human, evaluate strictly by valid word count, contextual accuracy and logical strategy.
+
+        Output ONLY this exact JSON, nothing else:
+
+        {
+
+        "winner": "alpha" | "beta" | "draw",
+
+        "swing_amount": number,
+
+        "display_message_for_gemini": "string"
+
+        }
+    </p>
+    <script src="common.js"></script>
+    <script src="judge.js"></script>
+</body>
+
+</html>
