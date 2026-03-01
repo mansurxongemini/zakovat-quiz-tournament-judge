@@ -1,1103 +1,481 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ilmi Tolib OS | O'quv Tizimi</title>
+    <title>Zero-Sum Corporate Battle | TDYU Business Law Simulation</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #1f2937; }
-        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
-        .dark-mode { background-color: #111827; color: #f9fafb; }
-        .dark-mode .glass-panel { background: rgba(31, 41, 55, 0.95); border: 1px solid rgba(55, 65, 81, 0.5); }
-        .dark-mode input, .dark-mode textarea { background-color: #374151; color: #fff; border-color: #4b5563; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .dark-mode ::-webkit-scrollbar-thumb { background: #4b5563; }
-
-        /* Streak Graph */
-        .streak-grid { display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-flow: column; gap: 4px; overflow-x: auto; padding-bottom: 10px;}
-        .streak-cell { width: 14px; height: 14px; background-color: #e5e7eb; border-radius: 2px; }
-        .dark-mode .streak-cell { background-color: #374151; }
-        .streak-cell.level-1 { background-color: #dcfce7; }
-        .streak-cell.level-2 { background-color: #86efac; }
-        .streak-cell.level-3 { background-color: #22c55e; }
-        .streak-cell.level-4 { background-color: #16a34a; }
-
-        /* Flashcard flip animation */
-        .perspective-1000 { perspective: 1000px; }
-        .transform-style-3d { transform-style: preserve-3d; transition: transform 0.6s; }
-        .backface-hidden { backface-visibility: hidden; }
-        .rotate-y-180 { transform: rotateY(180deg); }
-        
-        /* Toast messages */
-        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 50; display: flex; flex-direction: column; gap: 10px; }
-        .toast { padding: 12px 20px; border-radius: 8px; color: white; font-weight: 500; animation: slideIn 0.3s ease-out; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .toast.success { background-color: #10b981; }
-        .toast.error { background-color: #ef4444; }
-        .toast.info { background-color: #3b82f6; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <!-- Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="flex h-screen overflow-hidden transition-colors duration-300">
 
-    <!-- Sidebar -->
-    <aside class="w-64 glass-panel border-r shadow-lg flex flex-col justify-between z-20 transition-colors duration-300 relative">
-        <div>
-            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                <h1 class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
-                    <i class="fas fa-brain"></i> Ilmi Tolib
-                </h1>
-                <p class="text-sm text-gray-500 mt-1 dark:text-gray-400">Shaxsiy OS</p>
+<body class="min-h-screen bg-slate-50 pb-16">
+
+    <!-- PREMIUM HEADER -->
+    <header class="header-panel sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <!-- Logo / Brand -->
+                <div class="flex items-center gap-4">
+                    <div>
+                        <h1 class="font-display text-2xl font-bold text-slate-900 tracking-tight">
+                            RMC <span class="text-blue-700">Corporate Battle</span>
+                        </h1>
+                        <p class="text-sm text-slate-500 font-medium">TDYU Business Law Simulation</p>
+                    </div>
+                    <!-- Settings Toggle -->
+                    <button onclick="toggleDarkMode()"
+                        class="p-2 rounded-lg bg-slate-100 text-slate-500 hover:text-blue-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                            </path>
+                        </svg>
+                    </button>
+                    <button onclick="togglePresentationMode()"
+                        class="p-2 rounded-lg bg-slate-100 text-slate-500 hover:text-blue-600 transition-colors"
+                        title="Presentation Mode">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Timer Section -->
+                <div class="text-center px-8 border-x border-slate-200">
+                    <div id="timer-status" class="mb-1">
+                        <span class="text-gray-500 font-medium">Ready</span>
+                    </div>
+                    <div id="timer" class="timer-display">03:00</div>
+                    <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mt-1">Time Remaining</p>
+                </div>
+
+                <!-- Status -->
+                <div class="text-right">
+                    <div class="flex items-center gap-2 justify-end mb-1">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Live Display</span>
+                    </div>
+                </div>
             </div>
-            
-            <nav class="p-4 space-y-2">
-                <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-medium transition-all">
-                    <i class="fas fa-chart-pie w-5"></i> Boshqaruv Paneli
-                </button>
-                <button onclick="navigate('tasks')" id="nav-tasks" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-all">
-                    <i class="fas fa-tasks w-5"></i> Vazifalar
-                </button>
-                <button onclick="navigate('spaced')" id="nav-spaced" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-all">
-                    <i class="fas fa-layer-group w-5"></i> Spaced Repetition
-                </button>
-                <button onclick="navigate('challenges')" id="nav-challenges" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-all">
-                    <i class="fas fa-fire w-5"></i> Chaqiriqlar
-                </button>
-                <button onclick="navigate('pomodoro')" id="nav-pomodoro" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-all">
-                    <i class="fas fa-stopwatch w-5"></i> Fokus Taymeri
-                </button>
-                <button onclick="navigate('ai-exam')" id="nav-ai-exam" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-all">
-                    <i class="fas fa-robot w-5"></i> AI Imtihonchi
-                </button>
-                <button onclick="navigate('library')" id="nav-library" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-all">
-                    <i class="fas fa-book w-5"></i> Kutubxona
-                </button>
-            </nav>
+        </div>
+    </header>
+
+    <!-- CURRENT SCENARIO DISPLAY -->
+    <section class="max-w-7xl mx-auto px-6 py-6">
+        <div class="corporate-panel p-6">
+            <div class="flex items-start gap-6">
+                <div class="flex-shrink-0">
+                    <div id="drop-number" class="drop-number">SCENARIO 1 OF 5</div>
+                </div>
+                <div class="flex-grow">
+                    <h2 id="current-drop-title" class="font-display text-xl font-bold text-slate-800 mb-3">
+                        Drop 1: The Secret Founder
+                    </h2>
+                    <p id="drop-scenario" class="text-slate-600 text-lg leading-relaxed">
+                        Loading scenario...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN DASHBOARD - TEAM COMPARISON -->
+    <main class="max-w-7xl mx-auto px-6 pb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- TEAM ALPHA -->
+            <div class="corporate-panel team-alpha p-6">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                            <h2 class="text-xl font-bold text-slate-800">Team Alpha</h2>
+                        </div>
+                        <p class="text-sm text-slate-500 font-medium">Plaintiff / Startup Corporation</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Market Valuation
+                        </p>
+                        <div id="value-alpha" class="value-display neutral">
+                            $1,000,000
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider my-4"></div>
+
+                <!-- Target Vocabulary -->
+                <div>
+                    <p class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z">
+                            </path>
+                        </svg>
+                        Target Vocabulary
+                    </p>
+                    <div id="words-alpha" class="flex flex-wrap gap-2">
+                        <!-- Words injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Strategy Hint -->
+                <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                    <p class="text-sm text-blue-800 font-medium">
+                        💡 Focus on demonstrating proper corporate governance and legal entity protection in your
+                        arguments.
+                    </p>
+                </div>
+            </div>
+
+            <!-- TEAM BETA -->
+            <div class="corporate-panel team-beta p-6">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <h2 class="text-xl font-bold text-slate-800">Team Beta</h2>
+                        </div>
+                        <p class="text-sm text-slate-500 font-medium">Defendant / Investment Consortium</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Market Valuation
+                        </p>
+                        <div id="value-beta" class="value-display neutral">
+                            $1,000,000
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider my-4"></div>
+
+                <!-- Target Vocabulary -->
+                <div>
+                    <p class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z">
+                            </path>
+                        </svg>
+                        Target Vocabulary
+                    </p>
+                    <div id="words-beta" class="flex flex-wrap gap-2">
+                        <!-- Words injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Strategy Hint -->
+                <div class="mt-6 p-4 bg-red-50 rounded-lg border border-red-100">
+                    <p class="text-sm text-red-800 font-medium">
+                        💡 Emphasize shareholder rights, dividend claims, and the fiduciary duties of corporate
+                        officers.
+                    </p>
+                </div>
+            </div>
+
         </div>
 
-        <div class="p-6 border-t border-gray-200 dark:border-gray-700">
-            <div class="mb-4">
-                <div class="flex justify-between items-center mb-1">
-                    <span class="text-sm font-semibold">Daraja: <span id="user-level" class="text-indigo-600 dark:text-indigo-400">1</span></span>
-                    <span class="text-xs text-gray-500"><span id="user-xp">0</span> XP</span>
+        <!-- SCOREBOARD / COMPARISON BAR -->
+        <div class="mt-6 corporate-panel p-6">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Market Position Comparison</h3>
+            <div class="relative h-8 bg-slate-100 rounded-full overflow-hidden">
+                <div class="absolute inset-0 flex">
+                    <div id="bar-alpha" class="bg-blue-500 transition-all duration-500" style="width: 50%"></div>
+                    <div id="bar-beta" class="bg-red-500 transition-all duration-500" style="width: 50%"></div>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                    <div id="xp-bar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-xs font-bold text-white drop-shadow">VS</span>
                 </div>
             </div>
-            <button onclick="toggleDarkMode()" class="w-full py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-sm flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                <i class="fas fa-moon"></i> Rejimni o'zgartirish
-            </button>
+            <div class="flex justify-between mt-2 text-sm">
+                <span class="text-blue-600 font-semibold">Alpha Position</span>
+                <span class="text-red-600 font-semibold">Beta Position</span>
+            </div>
         </div>
-    </aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto p-8 relative" id="main-content">
-        
-        <!-- Dashboard View -->
-        <section id="view-dashboard" class="view-section fade-in block">
-            <h2 class="text-3xl font-bold mb-6">Xush kelibsiz, Tolib! 🚀</h2>
-            
-            <!-- Quick Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="glass-panel p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Bugungi vazifalar</p>
-                            <h3 class="text-2xl font-bold" id="stat-tasks">0/0</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="glass-panel p-6 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition" onclick="navigate('spaced')">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xl">
-                            <i class="fas fa-layer-group"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Takrorlanishi kerak</p>
-                            <h3 class="text-2xl font-bold text-red-600" id="stat-cards">0</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="glass-panel p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xl">
-                            <i class="fas fa-brain"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Chuqur diqqat (Bugun)</p>
-                            <h3 class="text-2xl font-bold" id="stat-deepwork">0 daq</h3>
-                        </div>
-                    </div>
-                </div>
+        <!-- LEADERBOARD SECTION -->
+        <div id="leaderboard-section" class="mt-6 corporate-panel p-6 ">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Historical Leaderboard</h3>
+                <span class="text-xs text-slate-400">Winning Entities</span>
             </div>
-
-            <!-- GitHub Style Streak -->
-            <div class="glass-panel p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
-                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                    <i class="fas fa-calendar-alt text-indigo-500"></i> O'rganish Uzluksizligi (Streak)
-                </h3>
-                <div class="streak-grid" id="streak-grid">
-                    <!-- JS will populate this -->
-                </div>
-                <div class="mt-4 text-sm text-gray-500 flex justify-between items-center">
-                    <span>Maksimal streak: <b id="max-streak" class="text-indigo-600 dark:text-indigo-400">0</b> kun</span>
-                    <div class="flex items-center gap-2">
-                        <span>Kam</span>
-                        <div class="w-3 h-3 rounded-sm bg-gray-200 dark:bg-gray-700"></div>
-                        <div class="w-3 h-3 rounded-sm bg-green-200"></div>
-                        <div class="w-3 h-3 rounded-sm bg-green-400"></div>
-                        <div class="w-3 h-3 rounded-sm bg-green-600"></div>
-                        <span>Ko'p</span>
-                    </div>
-                </div>
+            <div id="leaderboard-list" class="space-y-3">
+                <div class="text-center py-4 text-slate-400 text-sm">Simulation in progress...</div>
             </div>
-        </section>
-
-        <!-- Tasks View -->
-        <section id="view-tasks" class="view-section fade-in hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold">Vazifalar Paneli</h2>
-                <div class="flex gap-2">
-                    <input type="text" id="new-task-input" placeholder="Yangi vazifa qo'shish..." class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64 dark:bg-gray-800 dark:border-gray-700">
-                    <button onclick="addTask()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition">Qo'shish</button>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Bajarilmoqda -->
-                <div class="glass-panel p-6 rounded-2xl">
-                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-yellow-600"><i class="fas fa-circle-notch fa-spin text-sm"></i> Bajarilmoqda</h3>
-                    <div id="todo-list" class="space-y-3 min-h-[200px]">
-                        <!-- Tasks go here -->
-                    </div>
-                </div>
-                <!-- Bajarildi -->
-                <div class="glass-panel p-6 rounded-2xl">
-                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-green-600"><i class="fas fa-check-circle text-sm"></i> Bajarildi</h3>
-                    <div id="done-list" class="space-y-3 min-h-[200px] opacity-70">
-                        <!-- Tasks go here -->
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Spaced Repetition View -->
-        <section id="view-spaced" class="view-section fade-in hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold">Spaced Repetition</h2>
-                <div class="flex gap-2">
-                    <button onclick="showModal('ai-card-modal')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2">
-                        <i class="fas fa-magic"></i> AI Karta Yaratish
-                    </button>
-                    <button onclick="showModal('manual-card-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition">
-                        <i class="fas fa-plus"></i> Qo'lda Qo'shish
-                    </button>
-                </div>
-            </div>
-
-            <!-- Review Area (Visible if there are cards to review) -->
-            <div id="review-area" class="max-w-2xl mx-auto mt-12 hidden">
-                <div class="text-center mb-4 text-sm font-semibold text-gray-500">Takrorlanishi kerak: <span id="review-count" class="text-red-500 text-lg">0</span> ta karta</div>
-                
-                <div class="perspective-1000 w-full h-64 mb-6 cursor-pointer" onclick="flipCard()">
-                    <div id="flashcard-inner" class="relative w-full h-full transform-style-3d shadow-xl rounded-2xl">
-                        <!-- Front -->
-                        <div class="absolute w-full h-full backface-hidden bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center p-8 border-2 border-indigo-100 dark:border-gray-700">
-                            <h3 class="text-2xl font-bold text-center" id="card-front">Mavzu savoli bu yerda</h3>
-                            <div class="absolute bottom-4 text-xs text-gray-400">Javobni ko'rish uchun bosing</div>
-                        </div>
-                        <!-- Back -->
-                        <div class="absolute w-full h-full backface-hidden rotate-y-180 bg-indigo-50 dark:bg-indigo-900 rounded-2xl flex items-center justify-center p-8 border-2 border-indigo-200">
-                            <p class="text-xl text-center" id="card-back">Javob matni bu yerda chiqadi.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="review-buttons" class="grid grid-cols-4 gap-4 hidden">
-                    <button onclick="rateCard(1)" class="py-3 rounded-lg bg-red-100 text-red-700 font-bold hover:bg-red-200 transition">Qiyin / Xato (1 kun)</button>
-                    <button onclick="rateCard(3)" class="py-3 rounded-lg bg-orange-100 text-orange-700 font-bold hover:bg-orange-200 transition">Qiyinroq</button>
-                    <button onclick="rateCard(4)" class="py-3 rounded-lg bg-green-100 text-green-700 font-bold hover:bg-green-200 transition">Yaxshi</button>
-                    <button onclick="rateCard(5)" class="py-3 rounded-lg bg-blue-100 text-blue-700 font-bold hover:bg-blue-200 transition">Juda Oson</button>
-                </div>
-            </div>
-
-            <!-- All Cards List (Visible if nothing to review) -->
-            <div id="all-cards-area" class="glass-panel p-6 rounded-2xl mt-8">
-                <h3 class="text-lg font-bold mb-4">Barcha Kartalar (<span id="total-cards-count">0</span>)</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b dark:border-gray-700 text-gray-500">
-                                <th class="p-3">Savol</th>
-                                <th class="p-3">Interval (kun)</th>
-                                <th class="p-3">Keyingi takrorlash</th>
-                                <th class="p-3">Harakat</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cards-table-body">
-                            <!-- JS populates -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- Challenges View -->
-        <section id="view-challenges" class="view-section fade-in hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold">O'quv Chaqiriqlari (Challenges)</h2>
-                <button onclick="generateAIChallenge()" class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-4 py-2 rounded-lg transition flex items-center gap-2 shadow-lg" id="btn-gen-challenge">
-                    <i class="fas fa-fire"></i> AI Yangi Chaqiriq
-                </button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="challenges-grid">
-                <!-- JS Populates -->
-            </div>
-        </section>
-
-        <!-- Pomodoro View -->
-        <section id="view-pomodoro" class="view-section fade-in hidden">
-            <h2 class="text-3xl font-bold mb-6 text-center">Fokus Taymeri</h2>
-            <div class="max-w-md mx-auto glass-panel p-10 rounded-3xl text-center shadow-lg border-2 border-indigo-100 dark:border-gray-700">
-                <div class="flex justify-center gap-4 mb-8">
-                    <button onclick="setTimerMode('work')" id="mode-work" class="px-4 py-2 rounded-full bg-indigo-600 text-white font-medium">Fokus (25 min)</button>
-                    <button onclick="setTimerMode('break')" id="mode-break" class="px-4 py-2 rounded-full bg-transparent text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium">Tanaffus (5 min)</button>
-                </div>
-                
-                <div class="text-7xl font-bold mb-8 text-gray-800 dark:text-gray-100" id="timer-display">25:00</div>
-                
-                <div class="flex justify-center gap-4">
-                    <button onclick="startTimer()" id="btn-start-timer" class="w-16 h-16 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center text-2xl shadow-lg transition transform hover:scale-105">
-                        <i class="fas fa-play"></i>
-                    </button>
-                    <button onclick="pauseTimer()" class="w-16 h-16 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white flex items-center justify-center text-2xl shadow-lg transition transform hover:scale-105">
-                        <i class="fas fa-pause"></i>
-                    </button>
-                    <button onclick="resetTimer()" class="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center text-2xl shadow-lg transition transform hover:scale-105">
-                        <i class="fas fa-undo"></i>
-                    </button>
-                </div>
-                <p class="mt-6 text-sm text-gray-500">Bugungi chuqur diqqat: <b class="text-indigo-600" id="pomodoro-today-stats">0 min</b></p>
-            </div>
-        </section>
-
-        <!-- AI Examiner View -->
-        <section id="view-ai-exam" class="view-section fade-in hidden">
-            <h2 class="text-3xl font-bold mb-6">AI Imtihonchi</h2>
-            <div class="max-w-3xl mx-auto glass-panel p-6 rounded-2xl flex flex-col h-[70vh]">
-                <div class="mb-4 flex gap-2">
-                    <input type="text" id="exam-topic" placeholder="Qaysi mavzuda imtihon topshirmoqchisiz?" class="flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700">
-                    <button onclick="startExam()" id="btn-start-exam" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition flex items-center gap-2">
-                        <i class="fas fa-play"></i> Boshlash
-                    </button>
-                </div>
-                
-                <div id="exam-chat" class="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900 rounded-lg mb-4 space-y-4 border border-gray-200 dark:border-gray-700">
-                    <div class="text-center text-gray-500 mt-10">
-                        <i class="fas fa-robot text-4xl mb-3 text-indigo-300"></i>
-                        <p>Mavzuni kiriting va "Boshlash" tugmasini bosing.<br>AI sizga qiyin ochiq savol beradi.</p>
-                    </div>
-                </div>
-
-                <div class="flex gap-2">
-                    <textarea id="exam-answer" rows="2" placeholder="Javobingizni bu yerga yozing..." class="flex-1 px-4 py-2 border rounded-lg resize-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700" disabled></textarea>
-                    <button onclick="submitAnswer()" id="btn-submit-answer" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2 opacity-50 cursor-not-allowed" disabled>
-                        <i class="fas fa-paper-plane"></i> Yuborish
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Library (Resource Hub) View -->
-        <section id="view-library" class="view-section fade-in hidden">
-            <h2 class="text-3xl font-bold mb-6">Kutubxona va AI Xulosa</h2>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Input Area -->
-                <div class="glass-panel p-6 rounded-2xl lg:col-span-1 h-fit">
-                    <h3 class="text-lg font-bold mb-4">Yangi resurs</h3>
-                    <input type="text" id="res-title" placeholder="Sarlavha" class="w-full mb-3 px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700">
-                    <textarea id="res-content" rows="6" placeholder="Matn yoki havolani kiriting..." class="w-full mb-3 px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"></textarea>
-                    <button onclick="summarizeResource()" id="btn-summarize" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition flex items-center justify-center gap-2">
-                        <i class="fas fa-magic"></i> AI Xulosa va Saqlash
-                    </button>
-                </div>
-                <!-- Resource List -->
-                <div class="lg:col-span-2 space-y-4" id="resource-list">
-                    <!-- JS Populates -->
-                </div>
-            </div>
-        </section>
-
+        </div>
     </main>
 
-    <!-- Toast Notification Container -->
-    <div id="toast-container"></div>
-
-    <!-- Modals -->
-    <!-- Manual Card Modal -->
-    <div id="manual-card-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl w-full max-w-md transform transition-all">
-            <h3 class="text-2xl font-bold mb-4">Qo'lda Karta Qo'shish</h3>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Savol (Front)</label>
-                <input type="text" id="manual-q" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
+    <!-- VERDICT MODAL -->
+    <div id="verdict-modal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-content max-w-2xl w-full transform scale-95 transition-transform duration-300"
+            id="modal-content">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-slate-900 to-slate-800 px-8 py-6 rounded-t-2xl">
+                <div class="flex items-center justify-center gap-3">
+                    <svg class="w-8 h-8 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <h2 class="text-2xl font-display font-bold text-white uppercase tracking-wider">Judge's Verdict</h2>
+                </div>
             </div>
-            <div class="mb-6">
-                <label class="block text-sm font-medium mb-1">Javob (Back)</label>
-                <textarea id="manual-a" rows="3" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></textarea>
-            </div>
-            <div class="flex justify-end gap-2">
-                <button onclick="hideModal('manual-card-modal')" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg">Bekor qilish</button>
-                <button onclick="addManualCard()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Saqlash</button>
-            </div>
-        </div>
-    </div>
 
-    <!-- AI Card Modal -->
-    <div id="ai-card-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl w-full max-w-lg transform transition-all">
-            <h3 class="text-2xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-magic text-purple-500"></i> AI Fleshkartalar yozadi</h3>
-            <p class="text-sm text-gray-500 mb-4">Darslik yoki maqola matnini kiriting. Gemini AI undan eng muhim savol-javoblarni ajratib oladi.</p>
-            <textarea id="ai-source-text" rows="6" class="w-full px-4 py-2 border rounded-lg mb-6 dark:bg-gray-700 dark:border-gray-600" placeholder="Katta matnni bu yerga joylang..."></textarea>
-            <div class="flex justify-end gap-2">
-                <button onclick="hideModal('ai-card-modal')" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg">Bekor qilish</button>
-                <button onclick="generateAICards()" id="btn-gen-cards" class="px-4 py-2 bg-purple-600 text-white rounded-lg flex items-center gap-2">
-                    Yaratish <i class="fas fa-bolt"></i>
-                </button>
-            </div>
-        </div>
-    </div>
+            <!-- Modal Body -->
+            <div class="p-8">
+                <p id="modal-winner-text" class="text-xl text-center text-slate-800 mb-6 font-bold">
+                    Team Alpha wins the round!
+                </p>
 
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-6">
+                    <p id="modal-verdict-reason" class="text-slate-600 text-lg leading-relaxed italic text-center">
+                        "Alpha successfully protected their assets and avoided unlimited liability, while Beta failed to
+                        demonstrate their dividend rights."
+                    </p>
+                </div>
 
-    <script>
-        // --- System Constants & Global Variables ---
-        const apiKey = "AIzaSyBXh0iGXhxWG_nlOZMczak8P3Xjf1rcfGo"; // Environment injects this based on instructions. Do not add UI for it.
-        const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-        
-        const DEFAULT_CHALLENGES = [
-            { id: "c1", title: "Oshqozon to'q", desc: "Ertalabki nonushtani to'liq qiling.", xp: 15, done: false },
-            { id: "c2", title: "Kitobxon", desc: "Kitobdan 10 bet o'qing.", xp: 20, done: false },
-            { id: "c3", title: "Fokuslangan tolib", desc: "Bitta to'liq 25 daqiqalik pomodoro qiling.", xp: 25, done: false },
-            { id: "c4", title: "Miya mashqi", desc: "5 ta Spaced Repetition kartasini takrorlang.", xp: 20, done: false },
-            { id: "c5", title: "Suv ichish", desc: "Kun davomida 2 litr suv iching.", xp: 10, done: false },
-            { id: "c6", title: "Raqamli detoks", desc: "Yotishdan oldin 1 soat telefon ishlatmang.", xp: 30, done: false },
-            { id: "c7", title: "Yangi so'zlar", desc: "Chet tilidan 5 ta yangi so'z o'rganing.", xp: 25, done: false },
-            { id: "c8", title: "Sog'lom tana", desc: "15 daqiqa jismoniy mashq qiling.", xp: 20, done: false },
-            { id: "c9", title: "Reja tuzish", desc: "Ertangi kun uchun 3 ta asosiy vazifa yozing.", xp: 15, done: false },
-            { id: "c10", title: "Texnik ustoz", desc: "Biror narsani do'stingizga yoki AI ga tushuntirib bering.", xp: 40, done: false }
-        ];
-
-        let state = {
-            xp: 0,
-            tasks: [],
-            cards: [],
-            challenges: [],
-            resources: [],
-            streakDates: [], // Array of "YYYY-MM-DD"
-            deepWorkToday: 0, // In minutes
-            lastLogin: "",
-            darkMode: false
-        };
-
-        // --- Utility Functions ---
-        function getTodayStr() {
-            const d = new Date();
-            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-        }
-
-        function showToast(msg, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = msg;
-            container.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 3000);
-        }
-
-        function calculateLevel() {
-            return Math.floor(state.xp / 500) + 1;
-        }
-
-        function updateStreak() {
-            const today = getTodayStr();
-            if (state.lastLogin !== today) {
-                // Check if streak broke
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
-                
-                if (!state.streakDates.includes(today)) {
-                    state.streakDates.push(today);
-                }
-                
-                // Reset daily stuff if new day
-                if (state.lastLogin !== "") {
-                    state.deepWorkToday = 0;
-                    state.challenges.forEach(c => c.done = false); // Reset challenges
-                }
-                state.lastLogin = today;
-                saveData();
-            }
-        }
-
-        function addXP(amount) {
-            const oldLevel = calculateLevel();
-            state.xp += amount;
-            const newLevel = calculateLevel();
-            if (newLevel > oldLevel) {
-                showToast(`Tabriklaymiz! Siz ${newLevel}-darajaga yetdingiz! 🎉`, 'success');
-            }
-            saveData();
-            updateSidebarStats();
-        }
-
-        // --- Data Persistence ---
-        function loadData() {
-            const saved = localStorage.getItem('ilmiTolibData');
-            if (saved) {
-                state = { ...state, ...JSON.parse(saved) };
-            }
-            // Initialize challenges if empty
-            if (!state.challenges || state.challenges.length === 0) {
-                state.challenges = JSON.parse(JSON.stringify(DEFAULT_CHALLENGES));
-            }
-            
-            if (state.darkMode) {
-                document.body.classList.add('dark-mode');
-            }
-            
-            updateStreak();
-            updateSidebarStats();
-            renderAll();
-        }
-
-        function saveData() {
-            localStorage.setItem('ilmiTolibData', JSON.stringify(state));
-        }
-
-        // --- UI Navigation & Modes ---
-        function navigate(viewId) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.nav-btn').forEach(el => {
-                el.classList.remove('bg-indigo-50', 'dark:bg-indigo-900/30', 'text-indigo-600', 'dark:text-indigo-400', 'font-medium');
-                el.classList.add('text-gray-600', 'dark:text-gray-300');
-            });
-            
-            document.getElementById(`view-${viewId}`).classList.remove('hidden');
-            const activeBtn = document.getElementById(`nav-${viewId}`);
-            activeBtn.classList.remove('text-gray-600', 'dark:text-gray-300');
-            activeBtn.classList.add('bg-indigo-50', 'dark:bg-indigo-900/30', 'text-indigo-600', 'dark:text-indigo-400', 'font-medium');
-
-            if(viewId === 'dashboard') renderDashboard();
-            if(viewId === 'spaced') checkReviewCards();
-        }
-
-        function toggleDarkMode() {
-            state.darkMode = !state.darkMode;
-            document.body.classList.toggle('dark-mode');
-            saveData();
-        }
-
-        function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function hideModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-        // --- API & AI Integration ---
-        async function fetchGeminiWithRetry(prompt, systemInstruction, expectsJson = false, retries = 5) {
-            if (!apiKey) {
-                showToast("API Kalit kiritilmagan (Muhitda yo'q).", "error");
-                return null;
-            }
-
-            let payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                systemInstruction: { parts: [{ text: systemInstruction }] }
-            };
-
-            if (expectsJson) {
-                payload.generationConfig = {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "OBJECT",
-                        properties: {
-                            cards: {
-                                type: "ARRAY",
-                                items: {
-                                    type: "OBJECT",
-                                    properties: {
-                                        q: { type: "STRING" },
-                                        a: { type: "STRING" }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                };
-            }
-
-            let delays = [1000, 2000, 4000, 8000, 16000];
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const res = await fetch(GEMINI_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    const data = await res.json();
-                    return data.candidates[0].content.parts[0].text;
-                } catch (error) {
-                    console.error(`Attempt ${i+1} failed`, error);
-                    if (i === retries - 1) {
-                        showToast("AI xizmatiga ulanishda xatolik yuz berdi.", "error");
-                        return null;
-                    }
-                    await new Promise(r => setTimeout(r, delays[i]));
-                }
-            }
-        }
-
-        // --- Specific Render Functions ---
-
-        function updateSidebarStats() {
-            document.getElementById('user-level').innerText = calculateLevel();
-            document.getElementById('user-xp').innerText = state.xp;
-            const progress = (state.xp % 500) / 500 * 100;
-            document.getElementById('xp-bar').style.width = `${progress}%`;
-        }
-
-        function renderDashboard() {
-            const todayStr = getTodayStr();
-            const pendingTasks = state.tasks.filter(t => !t.done).length;
-            const dueCards = state.cards.filter(c => c.nextDate <= todayStr).length;
-            
-            document.getElementById('stat-tasks').innerText = `${state.tasks.length - pendingTasks}/${state.tasks.length}`;
-            document.getElementById('stat-cards').innerText = dueCards;
-            document.getElementById('stat-deepwork').innerText = `${state.deepWorkToday} daq`;
-
-            // Draw Streak Graph (last 140 days approx 20 weeks x 7 days)
-            const grid = document.getElementById('streak-grid');
-            grid.innerHTML = '';
-            const today = new Date();
-            let maxStreak = 0;
-            let currentStreak = 0;
-
-            for (let i = 139; i >= 0; i--) {
-                let d = new Date();
-                d.setDate(today.getDate() - i);
-                let dStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-                
-                let cell = document.createElement('div');
-                cell.className = 'streak-cell';
-                cell.title = dStr;
-
-                if (state.streakDates.includes(dStr)) {
-                    cell.classList.add('level-3'); // Basic green
-                    currentStreak++;
-                    if(currentStreak > maxStreak) maxStreak = currentStreak;
-                } else {
-                    currentStreak = 0;
-                }
-                grid.appendChild(cell);
-            }
-            document.getElementById('max-streak').innerText = maxStreak;
-        }
-
-        // --- Tasks Logic ---
-        function renderTasks() {
-            const todoList = document.getElementById('todo-list');
-            const doneList = document.getElementById('done-list');
-            todoList.innerHTML = ''; doneList.innerHTML = '';
-
-            state.tasks.forEach(t => {
-                const el = document.createElement('div');
-                el.className = 'flex items-center justify-between p-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm';
-                el.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask('${t.id}')" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer">
-                        <span class="${t.done ? 'line-through text-gray-400' : 'font-medium'}">${t.title}</span>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 text-center">
+                        <p class="text-sm text-slate-500 font-medium mb-1">Team Alpha Impact</p>
+                        <p id="modal-alpha-swing" class="text-2xl font-bold text-blue-600">+ $50,000</p>
                     </div>
-                    <button onclick="deleteTask('${t.id}')" class="text-red-400 hover:text-red-600 transition"><i class="fas fa-trash"></i></button>
-                `;
-                if (t.done) doneList.appendChild(el);
-                else todoList.appendChild(el);
-            });
-        }
-
-        function addTask() {
-            const input = document.getElementById('new-task-input');
-            if (!input.value.trim()) return;
-            state.tasks.push({ id: 't_'+Date.now(), title: input.value.trim(), done: false });
-            input.value = '';
-            addXP(2); // Small reward for planning
-            saveData();
-            renderTasks();
-            renderDashboard();
-        }
-
-        function toggleTask(id) {
-            const t = state.tasks.find(x => x.id === id);
-            if (t) {
-                t.done = !t.done;
-                if (t.done) {
-                    addXP(10);
-                    showToast("Vazifa bajarildi! +10 XP", "success");
-                    updateStreak();
-                }
-                saveData();
-                renderTasks();
-                renderDashboard();
-            }
-        }
-
-        function deleteTask(id) {
-            state.tasks = state.tasks.filter(x => x.id !== id);
-            saveData();
-            renderTasks();
-            renderDashboard();
-        }
-
-        // --- Spaced Repetition Logic (SM-2 Simplified) ---
-        let currentReviewCard = null;
-        
-        function renderCardsList() {
-            const tbody = document.getElementById('cards-table-body');
-            tbody.innerHTML = '';
-            document.getElementById('total-cards-count').innerText = state.cards.length;
-            
-            state.cards.forEach(c => {
-                tbody.innerHTML += `
-                    <tr class="border-b dark:border-gray-700">
-                        <td class="p-3 max-w-xs truncate" title="${c.q}">${c.q}</td>
-                        <td class="p-3">${c.interval}</td>
-                        <td class="p-3 ${c.nextDate <= getTodayStr() ? 'text-red-500 font-bold' : ''}">${c.nextDate}</td>
-                        <td class="p-3">
-                            <button onclick="deleteCard('${c.id}')" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function deleteCard(id) {
-            state.cards = state.cards.filter(c => c.id !== id);
-            saveData();
-            renderCardsList();
-            checkReviewCards();
-        }
-
-        function addManualCard() {
-            const q = document.getElementById('manual-q').value.trim();
-            const a = document.getElementById('manual-a').value.trim();
-            if (!q || !a) { showToast("Maydonlarni to'ldiring", "error"); return; }
-            
-            state.cards.push({
-                id: 'c_'+Date.now(), q, a,
-                interval: 1, nextDate: getTodayStr(), ease: 2.5, reps: 0
-            });
-            document.getElementById('manual-q').value = '';
-            document.getElementById('manual-a').value = '';
-            hideModal('manual-card-modal');
-            saveData();
-            addXP(5);
-            showToast("Karta qo'shildi! +5 XP", "success");
-            renderCardsList();
-            checkReviewCards();
-        }
-
-        async function generateAICards() {
-            const text = document.getElementById('ai-source-text').value.trim();
-            if (!text) return;
-            
-            const btn = document.getElementById('btn-gen-cards');
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Kutilmoqda...`;
-            btn.disabled = true;
-
-            const prompt = text;
-            const instruction = "Berilgan matndan eng muhim savol va javoblarni fleshkartalar uchun ajratib oling. JSON formatda qaytaring. Qoidalarga qat'iy amal qiling.";
-            
-            const resultJSONStr = await fetchGeminiWithRetry(prompt, instruction, true);
-            
-            btn.innerHTML = `Yaratish <i class="fas fa-bolt"></i>`;
-            btn.disabled = false;
-
-            if (resultJSONStr) {
-                try {
-                    const data = JSON.parse(resultJSONStr);
-                    if (data.cards && data.cards.length > 0) {
-                        data.cards.forEach(item => {
-                            state.cards.push({
-                                id: 'c_'+Math.random().toString(36).substr(2, 9),
-                                q: item.q, a: item.a,
-                                interval: 1, nextDate: getTodayStr(), ease: 2.5, reps: 0
-                            });
-                        });
-                        saveData();
-                        addXP(20);
-                        hideModal('ai-card-modal');
-                        document.getElementById('ai-source-text').value = '';
-                        showToast(`${data.cards.length} ta karta qo'shildi! +20 XP`, "success");
-                        renderCardsList();
-                        checkReviewCards();
-                    }
-                } catch (e) {
-                    showToast("AI formatida xatolik.", "error");
-                }
-            }
-        }
-
-        function checkReviewCards() {
-            const today = getTodayStr();
-            const dueCards = state.cards.filter(c => c.nextDate <= today);
-            
-            if (dueCards.length > 0) {
-                document.getElementById('review-area').classList.remove('hidden');
-                document.getElementById('all-cards-area').classList.add('hidden');
-                document.getElementById('review-count').innerText = dueCards.length;
-                
-                // Set first card
-                currentReviewCard = dueCards[0];
-                document.getElementById('card-front').innerText = currentReviewCard.q;
-                document.getElementById('card-back').innerText = currentReviewCard.a;
-                
-                // Reset visual state
-                const inner = document.getElementById('flashcard-inner');
-                inner.classList.remove('rotate-y-180');
-                document.getElementById('review-buttons').classList.add('hidden');
-            } else {
-                document.getElementById('review-area').classList.add('hidden');
-                document.getElementById('all-cards-area').classList.remove('hidden');
-                renderCardsList();
-            }
-            renderDashboard(); // Update counts
-        }
-
-        function flipCard() {
-            if(!currentReviewCard) return;
-            const inner = document.getElementById('flashcard-inner');
-            if (!inner.classList.contains('rotate-y-180')) {
-                inner.classList.add('rotate-y-180');
-                document.getElementById('review-buttons').classList.remove('hidden');
-            }
-        }
-
-        function rateCard(quality) {
-            // quality: 1 (Fail), 3 (Hard), 4 (Good), 5 (Easy)
-            let c = currentReviewCard;
-            
-            if (quality === 1) {
-                c.interval = 1; c.reps = 0;
-            } else {
-                if (c.reps === 0) c.interval = 1;
-                else if (c.reps === 1) c.interval = 6;
-                else {
-                    if(quality === 3) c.interval = Math.max(1, Math.round(c.interval * 1.2));
-                    if(quality === 4) c.interval = Math.max(1, Math.round(c.interval * 2.5));
-                    if(quality === 5) c.interval = Math.max(1, Math.round(c.interval * 3.0));
-                }
-                c.reps++;
-            }
-            
-            // Calculate next date
-            let d = new Date();
-            d.setDate(d.getDate() + c.interval);
-            c.nextDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-            
-            saveData();
-            addXP(3);
-            updateStreak();
-            checkReviewCards(); // Load next
-        }
-
-        // --- Challenges Logic ---
-        function renderChallenges() {
-            const grid = document.getElementById('challenges-grid');
-            grid.innerHTML = '';
-            
-            state.challenges.forEach(c => {
-                grid.innerHTML += `
-                    <div class="glass-panel p-6 rounded-2xl border ${c.done ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-gray-200 dark:border-gray-700'} relative overflow-hidden transition">
-                        ${c.done ? '<div class="absolute top-0 right-0 bg-green-500 text-white px-3 py-1 rounded-bl-lg text-xs font-bold">Bajarildi</div>' : ''}
-                        <h3 class="text-xl font-bold mb-2">${c.title}</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 h-10 overflow-hidden">${c.desc}</p>
-                        <div class="flex justify-between items-center mt-auto">
-                            <span class="text-indigo-600 font-bold dark:text-indigo-400">+${c.xp} XP</span>
-                            <button onclick="toggleChallenge('${c.id}')" class="px-4 py-2 rounded-lg font-medium transition ${c.done ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-700'}" ${c.done ? 'disabled' : ''}>
-                                ${c.done ? 'Yopilgan' : 'Bajarish'}
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function toggleChallenge(id) {
-            const c = state.challenges.find(x => x.id === id);
-            if (c && !c.done) {
-                c.done = true;
-                addXP(c.xp);
-                showToast(`Zo'r! ${c.xp} XP oldingiz!`, "success");
-                updateStreak();
-                saveData();
-                renderChallenges();
-            }
-        }
-
-        async function generateAIChallenge() {
-            const btn = document.getElementById('btn-gen-challenge');
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> O'ylanmoqda...`;
-            btn.disabled = true;
-
-            const prompt = "O'quvchi uchun 1 ta foydali, kreativ va qiziqarli yangi o'quv chaqirig'i (challenge) o'ylab toping.";
-            const instruction = "O'zbek tilida yozing. Format: Sarlavha|Qisqa ta'rif|XP miqdori (10-50 orasi son). Hech qanday qo'shimcha gaplarsiz faqat bitta qator shu formatda bering.";
-            
-            const res = await fetchGeminiWithRetry(prompt, instruction);
-            
-            btn.innerHTML = `<i class="fas fa-fire"></i> AI Yangi Chaqiriq`;
-            btn.disabled = false;
-
-            if (res && res.includes('|')) {
-                const parts = res.split('|');
-                if (parts.length >= 3) {
-                    state.challenges.unshift({
-                        id: 'ai_c_'+Date.now(),
-                        title: parts[0].trim(),
-                        desc: parts[1].trim(),
-                        xp: parseInt(parts[2].trim()) || 25,
-                        done: false
-                    });
-                    saveData();
-                    showToast("Yangi AI chaqiriq qo'shildi!", "success");
-                    renderChallenges();
-                }
-            } else {
-                showToast("Challenge yaratishda xato. Qayta urinib ko'ring.", "error");
-            }
-        }
-
-        // --- Pomodoro Logic ---
-        let timerInterval = null;
-        let timeLeft = 25 * 60; // seconds
-        let isWorking = true;
-
-        function updateTimerDisplay() {
-            const m = Math.floor(timeLeft / 60);
-            const s = timeLeft % 60;
-            document.getElementById('timer-display').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-        }
-
-        function setTimerMode(mode) {
-            pauseTimer();
-            isWorking = (mode === 'work');
-            timeLeft = isWorking ? 25 * 60 : 5 * 60;
-            
-            document.getElementById('mode-work').className = isWorking ? 'px-4 py-2 rounded-full bg-indigo-600 text-white font-medium' : 'px-4 py-2 rounded-full bg-transparent text-gray-500 hover:bg-gray-100 font-medium';
-            document.getElementById('mode-break').className = !isWorking ? 'px-4 py-2 rounded-full bg-indigo-600 text-white font-medium' : 'px-4 py-2 rounded-full bg-transparent text-gray-500 hover:bg-gray-100 font-medium';
-            
-            updateTimerDisplay();
-        }
-
-        function startTimer() {
-            if (timerInterval) return;
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                updateTimerDisplay();
-                if (timeLeft <= 0) {
-                    pauseTimer();
-                    showToast(isWorking ? "Fokus vaqti tugadi! Tanaffus qiling." : "Tanaffus tugadi. Ishga qaytamiz!", "success");
-                    if (isWorking) {
-                        state.deepWorkToday += 25;
-                        addXP(50);
-                        updateStreak();
-                        saveData();
-                        document.getElementById('pomodoro-today-stats').innerText = `${state.deepWorkToday} min`;
-                        renderDashboard();
-                    }
-                }
-            }, 1000);
-        }
-
-        function pauseTimer() {
-            clearInterval(timerInterval);
-            timerInterval = null;
-        }
-
-        function resetTimer() {
-            pauseTimer();
-            setTimerMode(isWorking ? 'work' : 'break');
-        }
-
-        // --- AI Examiner Logic ---
-        let examContext = "";
-
-        async function startExam() {
-            const topic = document.getElementById('exam-topic').value.trim();
-            if (!topic) { showToast("Mavzuni kiriting", "error"); return; }
-            
-            const btn = document.getElementById('btn-start-exam');
-            const chat = document.getElementById('exam-chat');
-            const ansInput = document.getElementById('exam-answer');
-            const subBtn = document.getElementById('btn-submit-answer');
-            
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> O'ylanmoqda`;
-            btn.disabled = true;
-
-            const prompt = `Mavzu: ${topic}`;
-            const instruction = "Siz qattiqqo'l, lekin adolatli universitet professorisiz. O'quvchining kiritgan mavzusi bo'yicha bitta qiyin, mantiqiy ochiq savol bering. Faqat bitta savol yozing, boshqa hech narsa qo'shmang.";
-
-            const aiQ = await fetchGeminiWithRetry(prompt, instruction);
-            
-            btn.innerHTML = `<i class="fas fa-play"></i> Boshlash`;
-            btn.disabled = false;
-
-            if (aiQ) {
-                examContext = `Mavzu: ${topic}\nSavol: ${aiQ}\n`;
-                chat.innerHTML = `
-                    <div class="flex flex-col gap-2 max-w-[80%]">
-                        <span class="text-xs text-gray-500 font-bold ml-1">AI Professor</span>
-                        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 dark:border-gray-700">
-                            ${aiQ}
-                        </div>
-                    </div>
-                `;
-                ansInput.disabled = false;
-                subBtn.disabled = false;
-                subBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                ansInput.focus();
-            }
-        }
-
-        async function submitAnswer() {
-            const ansInput = document.getElementById('exam-answer');
-            const answer = ansInput.value.trim();
-            if (!answer) return;
-
-            const chat = document.getElementById('exam-chat');
-            const subBtn = document.getElementById('btn-submit-answer');
-            
-            // Render user message
-            chat.innerHTML += `
-                <div class="flex flex-col gap-2 max-w-[80%] self-end items-end ml-auto mt-4">
-                    <span class="text-xs text-gray-500 font-bold mr-1">Siz</span>
-                    <div class="bg-indigo-600 text-white p-4 rounded-2xl rounded-tr-none shadow-sm">
-                        ${answer}
+                    <div class="bg-red-50 p-4 rounded-xl border border-red-100 text-center">
+                        <p class="text-sm text-slate-500 font-medium mb-1">Team Beta Impact</p>
+                        <p id="modal-beta-swing" class="text-2xl font-bold text-red-600">- $50,000</p>
                     </div>
                 </div>
-            `;
-            
-            ansInput.value = '';
-            ansInput.disabled = true;
-            subBtn.disabled = true;
-            subBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Tahlil...`;
-            chat.scrollTop = chat.scrollHeight;
 
-            const prompt = `${examContext}O'quvchining javobi: ${answer}`;
-            const instruction = "O'quvchining javobini 0 dan 100 gacha baholang. Dastlab qalin harflarda [Bahozingiz: 85/100] shaklida yozing. Keyin qisqacha xatolarini tushuntiring va to'g'ri javobni ayting.";
+                <div class="text-center">
+                    <button onclick="closeModal(); nextDrop()" class="btn btn-primary px-8">
+                        Continue Simulation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            const aiFeedback = await fetchGeminiWithRetry(prompt, instruction);
-            
-            ansInput.disabled = false;
-            subBtn.disabled = false;
-            subBtn.innerHTML = `<i class="fas fa-paper-plane"></i> Yuborish`;
+    <!-- NEWS TICKER -->
+    <div class="ticker-wrap">
+        <div class="ticker">
+            <div class="ticker-item">BREAKING: SEC announces new investigation into undisclosed liabilities at major
+                tech corporation</div>
+            <div class="ticker-item">MARKET UPDATE: Tech sector volatility increases as intellectual property disputes
+                rise across industry</div>
+            <div class="ticker-item">EXPERT OPINION: "A solid Memorandum of Association is your first line of defense in
+                corporate litigation"</div>
+            <div class="ticker-item">LEGAL TIP: Never underestimate the risks of joint and several liability in
+                corporate partnerships</div>
+            <div class="ticker-item">RUMOR MILL: Sleeping partners awakening across the industry to claim delayed
+                dividend payments</div>
+            <div class="ticker-item">REGULATORY: New corporate governance guidelines issued by Financial Conduct
+                Authority</div>
+            <div class="ticker-item">ANALYSIS: Market experts predict increased merger activity following recent
+                antitrust relaxations</div>
+        </div>
+    </div>
 
-            if (aiFeedback) {
-                chat.innerHTML += `
-                    <div class="flex flex-col gap-2 max-w-[80%] mt-4">
-                        <span class="text-xs text-indigo-500 font-bold ml-1">AI Professor Bahosi</span>
-                        <div class="bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-2xl rounded-tl-none shadow-sm border border-indigo-100 dark:border-indigo-800">
-                            ${aiFeedback.replace(/\n/g, '<br>')}
+    <!-- SOUND EFFECTS -->
+    <audio id="sound-ding" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+    <audio id="sound-success" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+    <audio id="sound-ticker" src="https://assets.mixkit.co/active_storage/sfx/1103/1103-preview.mp3"></audio>
+
+    <!-- PREP PHASE MODAL -->
+    <div id="prep-phase-modal"
+        class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/95 backdrop-blur-lg hidden p-6">
+        <div
+            class="corporate-panel max-w-4xl w-full mx-auto overflow-hidden shadow-2xl animate-float border-amber-500/30 bg-white">
+            <div
+                class="px-10 py-8 border-b border-slate-100 bg-gradient-to-r from-slate-900 to-slate-800 text-center relative overflow-hidden">
+                <div
+                    class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiLz48L3N2Zz4=')]">
+                </div>
+                <h2
+                    class="text-4xl font-display font-bold text-amber-400 tracking-tight uppercase relative z-10 drop-shadow-md">
+                    Preparation Phase</h2>
+                <p class="text-slate-300 mt-2 font-medium uppercase tracking-widest text-sm relative z-10">Read the
+                    scenario carefully. Formulate your strategy.</p>
+            </div>
+            <div class="p-12">
+                <h3 id="prep-modal-title" class="text-2xl font-bold text-slate-800 mb-6 border-b border-slate-200 pb-4">
+                    Loading Title...</h3>
+                <p id="prep-modal-scenario" class="text-xl text-slate-600 leading-relaxed font-medium">Loading scenario
+                    text...</p>
+
+                <div class="mt-12 text-center">
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">Time Remaining</p>
+                    <div id="prep-modal-timer"
+                        class="text-7xl font-display font-bold text-amber-500 tabular-nums tracking-tighter drop-shadow-sm">
+                        00:30</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STUDENT TUTORIAL MODAL -->
+    <div id="student-tutorial-modal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md hidden p-4 sm:p-6">
+        <div
+            class="corporate-panel max-w-6xl w-11/12 overflow-hidden shadow-2xl animate-float border-blue-900/20 bg-white flex flex-col max-h-[90vh]">
+
+            <!-- Sticky Header -->
+            <div class="px-8 py-6 border-b border-slate-100 bg-slate-900 flex justify-between items-start shrink-0">
+                <div>
+                    <h2 class="text-3xl font-display font-bold text-white tracking-tight">Corporate <span
+                            class="text-blue-400">Battle Briefing</span></h2>
+                    <p class="text-blue-200 mt-1 font-medium uppercase tracking-widest text-xs">Standard Operating
+                        Procedures & Scenario Analysis</p>
+                </div>
+                <button onclick="closeStudentTutorial()"
+                    class="text-slate-400 hover:text-white transition-colors bg-slate-800 p-2 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div class="p-8 overflow-y-auto w-full custom-scrollbar">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+
+                    <!-- Left side: Rules -->
+                    <div class="space-y-8">
+                        <h3
+                            class="text-xl font-display font-bold text-slate-800 border-b border-slate-200 pb-4 uppercase tracking-wider text-sm flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                                </path>
+                            </svg>
+                            The Directives
+                        </h3>
+
+                        <div class="flex gap-5 mb-4">
+                            <div
+                                class="w-10 h-10 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-center text-blue-700 font-bold shrink-0 shadow-sm">
+                                01</div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-lg mb-1">The Crisis</h4>
+                                <p class="text-slate-600 leading-relaxed text-sm">Analyze the corporate scenario
+                                    displayed on your dashboard. Every market shift begins with a high-stakes legal or
+                                    financial challenge that threatens your entity's valuation.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-5 mb-4">
+                            <div
+                                class="w-10 h-10 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-center text-blue-700 font-bold shrink-0 shadow-sm">
+                                02</div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-lg mb-1">The Weapon</h4>
+                                <p class="text-slate-600 leading-relaxed text-sm">Formulate a 2-4 sentence legal defense
+                                    or strategic attack. You MUST utilize the <strong>specific corporate law
+                                        vocabulary</strong> assigned to your team to validate your arguments.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-5">
+                            <div
+                                class="w-10 h-10 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-center text-blue-700 font-bold shrink-0 shadow-sm">
+                                03</div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-lg mb-1">The Market Verdict</h4>
+                                <p class="text-slate-600 leading-relaxed text-sm">The AI Judge evaluates your strategic
+                                    precision. A winning argument can trigger a <strong>Market Valuation swing of up to
+                                        $250,000</strong> from your opponent to your firm.</p>
+                            </div>
                         </div>
                     </div>
-                `;
-                chat.scrollTop = chat.scrollHeight;
-                
-                // Add XP if score is good (simple heuristic)
-                if (aiFeedback.includes("100") || aiFeedback.match(/[7-9][0-9]\/100/)) {
-                    addXP(40);
-                    showToast("Yaxshi baho! +40 XP", "success");
-                    updateStreak();
-                }
-            }
-        }
 
-        // --- Library Logic ---
-        function renderLibrary() {
-            const list = document.getElementById('resource-list');
-            list.innerHTML = '';
-            state.resources.slice().reverse().forEach(r => {
-                list.innerHTML += `
-                    <div class="glass-panel p-5 rounded-2xl border border-gray-200 dark:border-gray-700">
-                        <div class="flex justify-between items-start mb-2">
-                            <h4 class="font-bold text-lg">${r.title}</h4>
-                            <button onclick="deleteResource('${r.id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                    <!-- Right side: Real Example -->
+                    <div class="bg-slate-50 p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-inner">
+                        <h3
+                            class="text-xl font-display font-bold text-slate-800 border-b border-slate-200 pb-4 uppercase tracking-wider text-sm flex items-center gap-2 mb-6">
+                            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            Real Battle Example
+                        </h3>
+
+                        <div class="space-y-6">
+                            <!-- Scenario -->
+                            <div>
+                                <h4 class="font-bold text-slate-700 mb-2 uppercase tracking-wide text-xs">The Scenario
+                                </h4>
+                                <div class="bg-white p-4 rounded-lg border-l-4 border-slate-400 shadow-sm">
+                                    <p class="text-slate-700 italic text-sm">"A dormant partner suddenly demands an
+                                        immediate dividend payout based on an old verbal promise."</p>
+                                </div>
+                            </div>
+
+                            <!-- Weak Strategy -->
+                            <div>
+                                <h4
+                                    class="font-bold text-red-700 mb-2 uppercase tracking-wide text-xs flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span> Weak Strategy
+                                    (Penalty)
+                                </h4>
+                                <div class="bg-red-50/50 p-4 rounded-lg border border-red-100/50">
+                                    <p class="text-slate-800 font-medium mb-3 text-sm">"The dormant partner is bad and
+                                        wants a dividend from our share."</p>
+                                    <p class="text-red-700 text-xs bg-red-100/50 px-3 py-2 rounded"><strong>Why it
+                                            fails:</strong> Keyword stuffing, no logical legal framework or synthesis of
+                                        terms.</p>
+                                </div>
+                            </div>
+
+                            <!-- Winning Strategy -->
+                            <div>
+                                <h4
+                                    class="font-bold text-green-700 mb-2 uppercase tracking-wide text-xs flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-green-600 animate-pulse"></span> Winning
+                                    Strategy (+$150,000 Swing)
+                                </h4>
+                                <div
+                                    class="bg-green-50/50 p-4 rounded-lg border border-green-200 shadow-sm relative overflow-hidden">
+                                    <div
+                                        class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-green-200 to-transparent opacity-50 rounded-bl-full">
+                                    </div>
+                                    <p class="text-slate-800 font-medium mb-3 text-sm leading-relaxed relative z-10">
+                                        "According to our <em>articles of association</em>, the dormant partner has no
+                                        legal standing to demand a dividend. Their proportion of the <em>issued share
+                                            capital</em> does not grant voting rights or immediate returns unless
+                                        explicitly authorized by the board of directors."</p>
+                                    <p
+                                        class="text-green-800 text-xs bg-green-100/50 px-3 py-2 rounded relative z-10 border border-green-200/50">
+                                        <strong>Why it wins:</strong> Perfect contextual synthesis of corporate terms to
+                                        protect the company legally.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                        <p class="text-sm text-gray-600 dark:text-gray-300 italic mb-3 border-l-4 border-purple-400 pl-3">
-                            ${r.summary}
-                        </p>
                     </div>
-                `;
-            });
-        }
 
-        async function summarizeResource() {
-            const title = document.getElementById('res-title').value.trim();
-            const content = document.getElementById('res-content').value.trim();
-            if (!title || !content) { showToast("Sarlavha va matnni kiriting", "error"); return; }
+                </div>
+            </div>
 
-            const btn = document.getElementById('btn-summarize');
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> O'qilmoqda...`;
-            btn.disabled = true;
+            <!-- Sticky Footer Action -->
+            <div class="p-6 border-t border-slate-100 bg-white shrink-0">
+                <button onclick="closeStudentTutorial()"
+                    class="btn btn-primary w-full py-5 text-xl font-bold tracking-widest shadow-xl hover:shadow-blue-200 transition-all uppercase rounded-xl">
+                    Acknowledge & Start Simulation
+                </button>
+            </div>
 
-            const prompt = content;
-            const instruction = "Berilgan matn yoki havoladagi ma'lumotni juda qisqa, 3-4 gapda, tushunarli qilib xulosalab bering. O'zbek tilida.";
+        </div>
+    </div>
 
-            const summary = await fetchGeminiWithRetry(prompt, instruction);
-
-            btn.innerHTML = `<i class="fas fa-magic"></i> AI Xulosa va Saqlash`;
-            btn.disabled = false;
-
-            if (summary) {
-                state.resources.push({ id: 'r_'+Date.now(), title, summary });
-                saveData();
-                addXP(15);
-                showToast("Saqlandi! +15 XP", "success");
-                document.getElementById('res-title').value = '';
-                document.getElementById('res-content').value = '';
-                renderLibrary();
-            }
-        }
-
-        function deleteResource(id) {
-            state.resources = state.resources.filter(r => r.id !== id);
-            saveData();
-            renderLibrary();
-        }
-
-        // --- Initialization ---
-        function renderAll() {
-            renderTasks();
-            renderCardsList();
-            renderChallenges();
-            renderLibrary();
-            document.getElementById('pomodoro-today-stats').innerText = `${state.deepWorkToday} min`;
-        }
-
-        window.onload = () => {
-            loadData();
-        };
-
-    </script>
+    <script src="common.js"></script>
+    <script src="script.js"></script>
 </body>
+
 </html>
